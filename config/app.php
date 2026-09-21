@@ -56,6 +56,9 @@ return [
 
     'frontend_url' => env('FRONTEND_URL', 'http://localhost:8080'),
 
+    // URL do CRM admin (app qnb-admin, domínio diferente)
+    'admin_url' => env('ADMIN_URL', 'http://localhost:8898'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

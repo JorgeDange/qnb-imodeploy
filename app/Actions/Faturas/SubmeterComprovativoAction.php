@@ -43,12 +43,13 @@ class SubmeterComprovativoAction
         ]);
 
         // Notificação in-app para o admin
+        // O CRM vive na app qnb-admin (domínio diferente) — URL via ADMIN_URL
         ImobiliariaNotificacao::criar(
             $fatura->imobiliaria_id,
             'fatura_comprovativo',
             'Comprovativo Submetido',
             "Fatura {$fatura->numero} — comprovativo de pagamento submetido, aguarda aprovação.",
-            route('admin.faturas.show', $fatura)
+            rtrim(config('app.admin_url', ''), '/') . '/admin/faturas/' . $fatura->id
         );
 
         return $fatura->fresh();

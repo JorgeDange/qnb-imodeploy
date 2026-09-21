@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Admin;
 use App\Models\Fatura;
 use App\Models\Imobiliaria;
 use App\Models\ImobiliariaPlano;
@@ -26,7 +25,6 @@ class FaturaReciboTest extends TestCase
     {
         $imob = Imobiliaria::where('estado', 'aprovada')->first();
         $plano = Plano::first();
-        $admin = Admin::where('email', 'admin@qnbangola.com')->first();
 
         $subscricao = ImobiliariaPlano::create([
             'imobiliaria_id' => $imob->id,

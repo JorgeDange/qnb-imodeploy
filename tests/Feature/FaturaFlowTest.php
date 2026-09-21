@@ -26,7 +26,7 @@ class FaturaFlowTest extends TestCase
     {
         $imob = Imobiliaria::where('estado', 'aprovada')->first();
         $plano = Plano::first();
-        $admin = Admin::where('email', 'admin@qnbangola.com')->first();
+        $adminId = 1; // Admin vive na app qnb-admin — aqui só precisamos de um ID
 
         $subscricao = ImobiliariaPlano::create([
             'imobiliaria_id' => $imob->id,
@@ -77,9 +77,10 @@ class FaturaFlowTest extends TestCase
         $this->assertEquals('aguarda_aprovacao', $fatura->estado);
         $this->assertNotNull($fatura->comprovativo_path);
 
-        // Aprovar
-        $this->actingAs($admin, 'admin')
-            ->post(route('admin.faturas.aprovar', $fatura));
+        // Aprovar — agora feito na app qnb-admin (CRM separado).
+        // Aqui validamos o equivalente funcional: a Action de aprovação aplicada à fatura.
+        $aprovar = app(\App\Actions\Faturas\AprovarPagamentoAction::class);
+        $aprovar->execute($fatura, $adminId);
 
         $fatura->refresh();
         $this->assertEquals('paga', $fatura->estado);

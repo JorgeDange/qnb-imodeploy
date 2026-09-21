@@ -424,14 +424,7 @@ class DatabaseSeeder extends Seeder
             'estacionamento' => null,
         ]);
 
-        // Admin
-        Admin::create([
-            'nome' => 'Administrador QNB',
-            'email' => 'admin@qnbangola.com',
-            'password' => bcrypt('admin1234'),
-            'role' => 'super_admin',
-            'ativo' => true,
-        ]);
+        // Admin: agora semeado/apagado na app qnb-admin (CRM separado, mesma BD)
 
         // Cliente demo
         $this->call([ClienteDemoSeeder::class]);

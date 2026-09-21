@@ -47,10 +47,7 @@ return [
             'driver' => 'session',
             'provider' => 'imobiliarias',
         ],
-        'admin' => [
-            'driver' => 'session',
-            'provider' => 'admins',
-        ],
+        // Guard 'admin' movido para a app qnb-admin (CRM separado, mesma BD)
 'cliente' => [
         'driver' => 'session',
         'provider' => 'clientes',
@@ -85,10 +82,7 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', Imobiliaria::class),
         ],
-        'admins' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\Admin::class,
-        ],
+        // Provider 'admins' movido para a app qnb-admin
         'clientes' => [
             'driver' => 'eloquent',
             'model' => App\Models\Cliente::class,

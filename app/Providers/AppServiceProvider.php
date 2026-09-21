@@ -6,14 +6,10 @@ use App\Models\Imobiliaria;
 use App\Models\Imovel;
 use App\Models\Plano;
 use App\Observers\ImobiliariaObserver;
-use App\Providers\View\Composers\AdminSidebarComposer;
 use App\Observers\ImovelObserver;
 use App\Observers\PlanoObserver;
 use App\Providers\View\Composers\ClienteSidebarComposer;
 use App\Providers\View\Composers\PainelSidebarComposer;
-use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -31,9 +27,7 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        RateLimiter::for('admin-login', function (Request $request) {
-            return Limit::perMinute(5)->by($request->input('email') . '|' . $request->ip());
-        });
+        // Rate limiter 'admin-login' agora vive no qnb-admin (app separada).
 
         Plano::observe(PlanoObserver::class);
         Imobiliaria::observe(ImobiliariaObserver::class);
@@ -42,11 +36,6 @@ class AppServiceProvider extends ServiceProvider
         View::composer(
             ['cliente.*', 'cliente.auth.*'],
             ClienteSidebarComposer::class
-        );
-
-        View::composer(
-            'admin.*',
-            AdminSidebarComposer::class
         );
 
         View::composer(

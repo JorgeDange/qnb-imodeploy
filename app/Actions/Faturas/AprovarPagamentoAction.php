@@ -54,7 +54,7 @@ class AprovarPagamentoAction
             'fatura_aprovada',
             'Pagamento Confirmado',
             "Fatura {$fatura->numero} — pagamento aprovado! Recibo {$reciboNumero} disponível para download.",
-            route('painel.faturas.show', $fatura)
+            rtrim(config('app.frontend_url', ''), '/') . '/painel/faturas/' . $fatura->id
         );
 
         return $fatura->fresh();
