@@ -17,9 +17,10 @@ class AdminSmokeTest extends TestCase
         $admin = Admin::where('email', 'admin@qnbangola.com')->firstOrFail();
         $this->actingAs($admin, 'admin');
 
-        // 'admin.dashboard' e 'admin.relatorios' usam DATE_FORMAT (MySQL) e não
-        // correm no SQLite dos testes; valida-se o layout/composer nas restantes.
+        // Dashboard e relatorios usam agrupamento em PHP (compativel com SQLite).
         $routes = [
+            'admin.dashboard',
+            'admin.relatorios',
             'admin.imobiliarias',
             'admin.imoveis',
             'admin.pedidos',

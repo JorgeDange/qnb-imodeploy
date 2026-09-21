@@ -101,4 +101,18 @@ class Imovel extends Model
     {
         return $this->area;
     }
+
+    public function getMediaEstrelasAttribute(): ?float
+    {
+        $media = $this->avaliacoes()
+            ->where('estado', 'aprovada')
+            ->avg('estrelas');
+
+        return $media ? round($media, 1) : null;
+    }
+
+    public function getAvaliacoesCountAttribute(): int
+    {
+        return $this->avaliacoes()->where('estado', 'aprovada')->count();
+    }
 }

@@ -68,20 +68,12 @@
         @if($pagamento->estado === 'pendente')
         <div class="ul-painel-card">
             <h3 class="ul-painel-card-titulo">Ações</h3>
-
-            <form id="pag-confirm-{{ $pagamento->id }}" action="{{ route('admin.pagamentos.confirmar', $pagamento) }}" method="POST">
-                @csrf
-                <button type="button" class="ul-painel-btn ul-painel-btn--sucesso-bloco" onclick="modalConfirmar('Confirmar Pagamento', 'Confirmar este pagamento? O plano será ativado automaticamente.', function(){ document.getElementById('pag-confirm-{{ $pagamento->id }}').submit(); })">Confirmar Pagamento</button>
-            </form>
-
-            <form id="pag-rejeitar-{{ $pagamento->id }}" action="{{ route('admin.pagamentos.rejeitar', $pagamento) }}" method="POST">
-                @csrf
-                <div class="ul-painel-form-campo">
-                    <label class="ul-painel-form-label">Motivo da Rejeição (opcional)</label>
-                    <textarea name="motivo" class="ul-painel-form-input" rows="3" placeholder="Descreva o motivo..."></textarea>
-                </div>
-                <button type="button" class="ul-painel-btn ul-painel-btn--perigo" style="width:100%;" onclick="modalPerigo('Rejeitar Pagamento', 'Rejeitar este pagamento?', function(){ document.getElementById('pag-rejeitar-{{ $pagamento->id }}').submit(); })">Rejeitar Pagamento</button>
-            </form>
+            <p style="color:#888;font-size:13px;">Gerir pagamento via Fatura:</p>
+            @if($pagamento->fatura)
+            <a href="{{ route('admin.faturas.show', $pagamento->fatura) }}" class="ul-painel-btn ul-painel-btn--azul" style="width:100%;">Ver Fatura #{{ $pagamento->fatura->numero }}</a>
+            @else
+            <p style="color:#e74c3c;">Fatura não encontrada.</p>
+            @endif
         </div>
         @endif
     </div>

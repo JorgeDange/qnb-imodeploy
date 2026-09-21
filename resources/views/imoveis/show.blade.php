@@ -27,6 +27,13 @@
             <div class="left">
                 <h3 class="ul-project-details-title">{{ $imovel->titulo }}</h3>
                 <span class="ul-project-details-location"><span class="icon"><i class="flaticon-maps-and-flags"></i></span>{{ $imovel->municipio }}, {{ $imovel->provincia }}</span>
+                @if($imovel->media_estrelas)
+                <span style="display:inline-flex;align-items:center;gap:4px;margin-left:12px;padding:4px 10px;background:#f0f7ff;border-radius:20px;font-size:13px;color:#1a5276;font-weight:600;">
+                    <i class="flaticon-star" style="color:#f4c430;font-size:14px;"></i>
+                    {{ $imovel->media_estrelas }}
+                    <span style="font-weight:400;color:#666;">({{ $imovel->avaliacoes_count }})</span>
+                </span>
+                @endif
             </div>
 
             <div class="right">
@@ -206,6 +213,39 @@
                         <div class="ul-project-details-features wow animate__fadeInUp">
                             @foreach($imovel->amenidades as $amenidade)
                             <span class="feature"><span class="icon"><i class="flaticon-check-4"></i></span><span class="txt">{{ $amenidade->nome }}</span></span>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Avaliações aprovadas -->
+                    @php $avaliacoesAprovadas = $imovel->avaliacoes()->where('estado', 'aprovada')->with('cliente')->latest()->get(); @endphp
+                    @if($avaliacoesAprovadas->count())
+                    <div class="ul-project-details-block wow animate__fadeIn">
+                        <h3 class="ul-project-details-title">
+                            Avaliações
+                            <span style="font-size:14px;font-weight:400;color:#666;margin-left:8px;">
+                                <i class="flaticon-star" style="color:#f4c430;"></i> {{ $imovel->media_estrelas }} ({{ $imovel->avaliacoes_count }})
+                            </span>
+                        </h3>
+                        <div class="avaliacoes-lista mt-3">
+                            @foreach($avaliacoesAprovadas as $avaliacao)
+                            <div style="padding:14px 0;border-bottom:1px solid #f0f0f0;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <div>
+                                        <strong style="color:#333;">{{ $avaliacao->autor_nome }}</strong>
+                                        <span style="margin-left:8px;color:#888;font-size:12px;">{{ $avaliacao->created_at->format('d/m/Y') }}</span>
+                                    </div>
+                                    <div style="color:#f4c430;font-size:13px;">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            @if($i <= $avaliacao->estrelas)★@else☆@endif
+                                        @endfor
+                                    </div>
+                                </div>
+                                @if($avaliacao->comentario)
+                                <p style="margin:6px 0 0;color:#555;font-size:14px;">{{ $avaliacao->comentario }}</p>
+                                @endif
+                            </div>
                             @endforeach
                         </div>
                     </div>

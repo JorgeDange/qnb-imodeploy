@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('painel-assets/css/painel.css') }}">
     <link rel="icon" type="image/svg+xml" href="{{ asset('assets/img/logo-c.svg') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     @stack('styles')
 </head>
 
@@ -148,6 +149,10 @@
                         <a href="{{ route('admin.settings') }}"><i class="bi bi-gear"></i> Configurações</a>
                     </li>
 
+                    <li class="{{ request()->routeIs('admin.empresa-config*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.empresa-config') }}"><i class="bi bi-building"></i> Empresa</a>
+                    </li>
+
                     <li class="{{ request()->routeIs('admin.admins*') ? 'active' : '' }}">
                         <a href="{{ route('admin.admins') }}"><i class="bi bi-person-badge"></i> Administradores
                             @if($adminCount > 0)<span class="ul-painel-nav-badge ul-painel-nav-badge--info">{{ $adminCount }}</span>@endif
@@ -180,7 +185,7 @@
     <script src="{{ asset('assets/vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('assets/vendor/animate-wow/wow.min.js') }}"></script>
     <script src="{{ asset('assets/vendor/jquery.min.js') }}"></script>
-    <!-- Chart.js carregado no dashboard via @push('scripts') -->
+    <!-- Chart.js e outros scripts da página entram pela stack 'scripts' -->
     <script src="{{ asset('painel-assets/js/painel-loader.js') }}"></script>
     <script src="{{ asset('painel-assets/js/painel.js') }}"></script>
     @include('components.modal-global')

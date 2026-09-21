@@ -31,7 +31,11 @@
             @if($imobiliaria->getPlanoAtivo() && $imobiliaria->getPlanoAtivo()->plano_id == $planoItem->id)
             <span class="ul-painel-btn" style="opacity:0.5;cursor:default;">Plano Atual</span>
             @else
-            <a href="{{ route('painel.pagamento.novo') }}" class="ul-painel-btn" style="margin:0 15px 20px;">Ativar Agora</a>
+            <form action="{{ route('painel.ativar-plano.criar') }}" method="POST" style="margin:0 15px 20px;">
+                @csrf
+                <input type="hidden" name="plano_id" value="{{ $planoItem->id }}">
+                <button type="submit" class="ul-painel-btn" style="width:100%;">Ativar Agora</button>
+            </form>
             @endif
         </div>
     </div>

@@ -7,6 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Queue\SerializesModels;
 
 class PagamentoConfirmado extends Mailable
@@ -34,6 +35,22 @@ class PagamentoConfirmado extends Mailable
 
     public function attachments(): array
     {
-        return [];
+        $fatura = $this->pagamento->fatura;
+
+        if (!$fatura || !$fatura->pdf_path) {
+            return [];
+        }
+
+        $caminhoCompleto = storage_path('app/public/' . $fatura->pdf_path);
+
+        if (!file_exists($caminhoCompleto)) {
+            return [];
+        }
+
+        return [
+            Attachment::from($caminhoCompleto)
+                ->as('Fatura-' . str_replace('/', '-', $fatura->numero) . '.pdf')
+                ->withMime('application/pdf'),
+        ];
     }
 }

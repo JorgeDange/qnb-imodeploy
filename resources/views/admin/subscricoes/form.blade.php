@@ -22,7 +22,7 @@
             <select name="imobiliaria_id" class="ul-painel-form-input" required>
                 <option value="">Selecione...</option>
                 @foreach($imobiliarias as $imob)
-                    <option value="{{ $imob->id }}" {{ old('imobiliaria_id', $subscricao->imobiliaria_id ?? '') == $imob->id ? 'selected' : '' }}>
+                    <option value="{{ $imob->id }}" {{ old('imobiliaria_id', $subscricao?->imobiliaria_id ?? '') == $imob->id ? 'selected' : '' }}>
                         {{ $imob->nome }}
                     </option>
                 @endforeach
@@ -37,7 +37,7 @@
             <select name="plano_id" class="ul-painel-form-input" required>
                 <option value="">Selecione...</option>
                 @foreach($planos as $p)
-                    <option value="{{ $p->id }}" {{ old('plano_id', $subscricao->plano_id ?? '') == $p->id ? 'selected' : '' }}>
+                    <option value="{{ $p->id }}" {{ old('plano_id', $subscricao?->plano_id ?? '') == $p->id ? 'selected' : '' }}>
                         {{ $p->nome }} — {{ number_format($p->preco, 0, ',', '.') }} {{ $p->moeda }} ({{ $p->posts_limite }} posts, {{ $p->dias_validade }} dias)
                     </option>
                 @endforeach
@@ -50,7 +50,7 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
             <div class="ul-painel-form-campo">
                 <label class="ul-painel-form-label">Data de Início *</label>
-                <input type="date" name="data_inicio" class="ul-painel-form-input" value="{{ old('data_inicio', $subscricao->data_inicio?->format('Y-m-d') ?? date('Y-m-d')) }}" required>
+                <input type="date" name="data_inicio" class="ul-painel-form-input" value="{{ old('data_inicio', $subscricao?->data_inicio?->format('Y-m-d') ?? date('Y-m-d')) }}" required>
                 @error('data_inicio')
                     <span class="ul-painel-form-erro">{{ $message }}</span>
                 @enderror
@@ -58,7 +58,7 @@
 
             <div class="ul-painel-form-campo">
                 <label class="ul-painel-form-label">Data de Expiração *</label>
-                <input type="date" name="data_expiracao" class="ul-painel-form-input" value="{{ old('data_expiracao', $subscricao->data_expiracao?->format('Y-m-d') ?? date('Y-m-d', strtotime('+30 days'))) }}" required>
+                <input type="date" name="data_expiracao" class="ul-painel-form-input" value="{{ old('data_expiracao', $subscricao?->data_expiracao?->format('Y-m-d') ?? date('Y-m-d', strtotime('+30 days'))) }}" required>
                 @error('data_expiracao')
                     <span class="ul-painel-form-erro">{{ $message }}</span>
                 @enderror
@@ -68,14 +68,14 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
             <div class="ul-painel-form-campo">
                 <label class="ul-painel-form-label">Posts Usados</label>
-                <input type="number" name="posts_usados" class="ul-painel-form-input" value="{{ old('posts_usados', $subscricao->posts_usados ?? 0) }}" min="0">
+                <input type="number" name="posts_usados" class="ul-painel-form-input" value="{{ old('posts_usados', $subscricao?->posts_usados ?? 0) }}" min="0">
             </div>
 
             <div class="ul-painel-form-campo">
                 <label class="ul-painel-form-label">Estado *</label>
                 <select name="estado" class="ul-painel-form-input" required>
                     @foreach(['ativa', 'pendente', 'expirada', 'cancelada'] as $est)
-                        <option value="{{ $est }}" {{ old('estado', $subscricao->estado ?? 'ativa') === $est ? 'selected' : '' }}>
+                        <option value="{{ $est }}" {{ old('estado', $subscricao?->estado ?? 'ativa') === $est ? 'selected' : '' }}>
                             {{ ucfirst($est) }}
                         </option>
                     @endforeach
@@ -85,7 +85,7 @@
 
         <div style="margin-top:12px;">
             <label class="ul-painel-form-label" style="display:flex;align-items:center;gap:6px;cursor:pointer;">
-                <input type="checkbox" name="renovacao_automatica" value="1" {{ old('renovacao_automatica', $subscricao->renovacao_automatica ?? false) ? 'checked' : '' }}>
+                <input type="checkbox" name="renovacao_automatica" value="1" {{ old('renovacao_automatica', $subscricao?->renovacao_automatica ?? false) ? 'checked' : '' }}>
                 Renovação automática
             </label>
         </div>

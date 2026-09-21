@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; font-size: 12px; color: #333; }
+        body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #333; }
         .header { background-color: #1a5276; color: #fff; padding: 20px 30px; margin-bottom: 30px; }
         .header h1 { font-size: 20px; margin-bottom: 5px; }
         .header p { font-size: 11px; opacity: 0.8; }
@@ -29,9 +29,11 @@
 </head>
 <body>
     <div class="header">
-        <h1>QNB Imobiliária</h1>
-        <p>Marketplace de Imóveis em Angola</p>
-        <p>NIF: 5417892140 | Luanda, Angola</p>
+        <h1>{{ $empresa['empresa_nome'] ?? 'QNB Imobiliaria' }}</h1>
+        <p>NIF: {{ $empresa['empresa_nif'] ?? '' }} | {{ $empresa['empresa_endereco'] ?? '' }}</p>
+        @if($empresa['empresa_telefone'] ?? null)
+        <p>Tel: {{ $empresa['empresa_telefone'] }} | Email: {{ $empresa['empresa_email'] ?? '' }}</p>
+        @endif
     </div>
 
     <div class="fatura-info">
@@ -44,7 +46,7 @@
         </div>
         <div class="bloco fatura-numero">
             <h2>FATURA</h2>
-            <p><strong>Nº:</strong> {{ $fatura->numero }}</p>
+            <p><strong>No:</strong> {{ $fatura->numero }}</p>
             <p><strong>Data:</strong> {{ $fatura->emitida_em ? $fatura->emitida_em->format('d/m/Y') : now()->format('d/m/Y') }}</p>
             <p><strong>Estado:</strong> {{ $fatura->pagamento->estado === 'confirmado' ? 'Paga' : 'Pendente' }}</p>
         </div>
@@ -53,33 +55,62 @@
     <table>
         <thead>
             <tr>
-                <th>Descrição</th>
+                <th>Descricao</th>
+                <th style="text-align:center;">Qtd</th>
+                <th style="text-align:right;">Valor Unit.</th>
                 <th style="text-align:right;">Subtotal</th>
             </tr>
         </thead>
         <tbody>
+            @forelse($fatura->linhas as $linha)
+            <tr>
+                <td>{{ $linha->descricao }}</td>
+                <td style="text-align:center;">{{ $linha->quantidade }}</td>
+                <td style="text-align:right;">{{ number_format($linha->valor_unitario, 2, ',', '.') }}</td>
+                <td style="text-align:right;">{{ number_format($linha->subtotal, 2, ',', '.') }}</td>
+            </tr>
+            @empty
             <tr>
                 <td>
                     <strong>Plano: {{ $fatura->pagamento->subscricao->plano->nome ?? '—' }}</strong><br>
                     <span style="font-size:10px;color:#666;">
                         Validade: {{ $fatura->pagamento->subscricao->plano->dias_validade ?? 0 }} dias |
-                        Posts: {{ $fatura->pagamento->subscricao->plano->posts_limite ?? 0 }} imóveis
+                        Posts: {{ $fatura->pagamento->subscricao->plano->posts_limite ?? 0 }} imoveis
                     </span>
                 </td>
-                <td style="text-align:right;">{{ number_format($fatura->valor, 2, ',', '.') }} {{ $fatura->moeda }}</td>
+                <td style="text-align:center;">1</td>
+                <td style="text-align:right;">{{ number_format($fatura->valor, 2, ',', '.') }}</td>
+                <td style="text-align:right;">{{ number_format($fatura->valor, 2, ',', '.') }}</td>
             </tr>
+            @endforelse
         </tbody>
     </table>
 
     <table class="totais">
         <tr>
             <td>Subtotal:</td>
-            <td style="text-align:right;">{{ number_format($fatura->valor, 2, ',', '.') }} {{ $fatura->moeda }}</td>
+            <td style="text-align:right;">{{ number_format($fatura->subtotal, 2, ',', '.') }} {{ $fatura->moeda }}</td>
         </tr>
+        @php
+            $ivaPerc = $configFatura['iva_percentagem'] ?? 14;
+            $retPerc = $configFatura['retencao_percentagem'] ?? 0;
+        @endphp
         <tr>
-            <td>IVA (14%):</td>
+            <td>IVA ({{ $ivaPerc }}%):</td>
             <td style="text-align:right;">{{ number_format($fatura->iva, 2, ',', '.') }} {{ $fatura->moeda }}</td>
         </tr>
+        @if($fatura->desconto > 0)
+        <tr>
+            <td>Desconto:</td>
+            <td style="text-align:right;">-{{ number_format($fatura->desconto, 2, ',', '.') }} {{ $fatura->moeda }}</td>
+        </tr>
+        @endif
+        @if($fatura->retencao > 0)
+        <tr>
+            <td>Retencao na Fonte ({{ $retPerc }}%):</td>
+            <td style="text-align:right;">-{{ number_format($fatura->retencao, 2, ',', '.') }} {{ $fatura->moeda }}</td>
+        </tr>
+        @endif
         <tr>
             <td>Total:</td>
             <td style="text-align:right;">{{ number_format($fatura->total, 2, ',', '.') }} {{ $fatura->moeda }}</td>
@@ -87,13 +118,22 @@
     </table>
 
     <div class="notas">
-        <h4>Dados Bancários</h4>
-        <p><strong>Banco:</strong> BFA | <strong>IBAN:</strong> AO06 0040 0000 8857 2019 1019 5 | <strong>Titular:</strong> QNB Imobiliária, Lda</p>
+        <h4>Dados Bancarios</h4>
+        <p><strong>Banco:</strong> {{ $empresa['banco_nome'] ?? '—' }} | <strong>IBAN:</strong> {{ $empresa['banco_iban'] ?? '—' }} | <strong>Titular:</strong> {{ $empresa['banco_titular'] ?? '—' }}</p>
     </div>
 
+    @if($fatura->nota)
+    <div class="notas" style="margin-top:10px;">
+        <h4>Nota</h4>
+        <p>{{ $fatura->nota }}</p>
+    </div>
+    @endif
+
     <div class="footer">
-        <p>QNB Imobiliária — Marketplace de Imóveis em Angola</p>
-        <p>Este documento não substitui uma fatura oficial emitida pelo contribuinte.</p>
+        <p>{{ $empresa['empresa_nome'] ?? 'QNB Imobiliaria' }} — {{ $empresa['empresa_endereco'] ?? '' }}</p>
+        @if($configFatura['rodape'] ?? null)
+        <p>{{ $configFatura['rodape'] }}</p>
+        @endif
     </div>
 </body>
 </html>

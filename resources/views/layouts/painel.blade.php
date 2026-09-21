@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('painel-assets/css/painel.css') }}">
     <link rel="icon" type="image/svg+xml" href="{{ asset('assets/img/logo-c.svg') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     @stack('styles')
 </head>
 
@@ -82,6 +83,11 @@
                         </a>
                     </li>
 
+                    <li class="{{ request()->routeIs('painel.admin-mensagens*') ? 'active' : '' }}">
+                        <a href="{{ route('painel.admin-mensagens') }}"><i class="bi bi-shield-lock"></i> Mensagens Admin
+                        </a>
+                    </li>
+
                     <li class="{{ request()->routeIs('painel.visitas*') ? 'active' : '' }}">
                         <a href="{{ route('painel.visitas') }}"><i class="bi bi-calendar-event"></i> Visitas
                             @if($visitasPend > 0)<span class="ul-painel-nav-badge">{{ $visitasPend }}</span>@endif
@@ -101,6 +107,10 @@
                                 <span class="ul-painel-nav-badge ul-painel-nav-badge--aviso">{{ $diasRestantes }}d</span>
                             @endif
                         </a>
+                    </li>
+
+                    <li class="{{ request()->routeIs('painel.faturas*') ? 'active' : '' }}">
+                        <a href="{{ route('painel.faturas') }}"><i class="bi bi-receipt"></i> Faturas</a>
                     </li>
 
                     <li class="{{ request()->routeIs('painel.estatisticas*') ? 'active' : '' }}">

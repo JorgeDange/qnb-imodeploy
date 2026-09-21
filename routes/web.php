@@ -46,6 +46,7 @@ Route::prefix('painel')->name('painel.')->group(function () {
         Route::get('/perfil', [PainelController::class, 'perfil'])->name('perfil');
         Route::put('/perfil', [PainelController::class, 'perfilUpdate'])->name('perfil.update');
         Route::get('/ativar-plano', [PainelController::class, 'ativarPlano'])->name('ativar-plano');
+        Route::post('/ativar-plano', [PainelController::class, 'criarFaturaPlano'])->name('ativar-plano.criar');
         Route::get('/imoveis', [PainelController::class, 'imoveis'])->name('imoveis');
         Route::get('/imoveis/novo', [PainelController::class, 'imovelForm'])->name('imoveis.novo');
         Route::get('/imoveis/{id}/editar', [PainelController::class, 'imovelForm'])->name('imoveis.editar');
@@ -56,6 +57,12 @@ Route::prefix('painel')->name('painel.')->group(function () {
         Route::get('/mensagens', [PainelController::class, 'mensagens'])->name('mensagens');
         Route::post('/mensagens/{id}/lida', [PainelController::class, 'mensagemLida'])->name('mensagens.lida');
         Route::post('/mensagens/{id}/notificar', [PainelController::class, 'mensagemNotificar'])->name('mensagens.notificar');
+
+        // Mensagens do Admin
+        Route::get('/admin-mensagens', [PainelController::class, 'adminMensagens'])->name('admin-mensagens');
+        Route::get('/admin-mensagens/{id}', [PainelController::class, 'adminMensagemShow'])->name('admin-mensagens.show');
+        Route::post('/admin-mensagens/{id}/responder', [PainelController::class, 'adminMensagemResponder'])->name('admin-mensagens.responder');
+        Route::post('/admin-mensagens/{id}/lida', [PainelController::class, 'adminMensagemLida'])->name('admin-mensagens.lida');
 
         // Destaques
         Route::get('/destaques', [PainelController::class, 'destaques'])->name('destaques');
@@ -75,13 +82,12 @@ Route::prefix('painel')->name('painel.')->group(function () {
         Route::get('/perfil/password', [PainelController::class, 'passwordForm'])->name('perfil.password');
         Route::post('/perfil/password', [PainelController::class, 'passwordSalvar'])->name('perfil.password.salvar');
 
-        // Pagamento
-        Route::get('/pagamento/novo', [PainelController::class, 'pagamentoNovo'])->name('pagamento.novo');
-        Route::post('/pagamento', [PainelController::class, 'pagamentoSalvar'])->name('pagamento.salvar');
-        Route::get('/pagamento/confirmado', [PainelController::class, 'pagamentoConfirmado'])->name('pagamento.confirmado');
-        Route::get('/pagamentos', [PainelController::class, 'pagamentos'])->name('pagamentos');
-        Route::get('/pagamentos/{pagamento}', [PainelController::class, 'pagamentoShow'])->name('pagamentos.show');
-        Route::get('/faturas/{fatura}/download', [PainelController::class, 'faturaDownload'])->name('faturas.download');
+        // Faturas
+        Route::get('/faturas', [\App\Http\Controllers\Painel\FaturaController::class, 'index'])->name('faturas');
+        Route::get('/faturas/{fatura}', [\App\Http\Controllers\Painel\FaturaController::class, 'show'])->name('faturas.show');
+        Route::get('/faturas/{fatura}/download', [\App\Http\Controllers\Painel\FaturaController::class, 'download'])->name('faturas.download');
+        Route::get('/faturas/{fatura}/recibo', [\App\Http\Controllers\Painel\FaturaController::class, 'downloadRecibo'])->name('faturas.recibo');
+        Route::post('/faturas/{fatura}/comprovativo', [\App\Http\Controllers\Painel\FaturaController::class, 'submeterComprovativo'])->name('faturas.comprovativo');
     });
 });
 
@@ -136,6 +142,10 @@ Route::prefix('cliente')->name('cliente.')->group(function () {
         Route::get('avaliacoes', [\App\Http\Controllers\Cliente\ClienteAvaliacaoController::class, 'index'])->name('avaliacoes');
         Route::post('avaliacoes', [\App\Http\Controllers\Cliente\ClienteAvaliacaoController::class, 'store'])->name('avaliacoes.store')->middleware('throttle:10,1');
         Route::post('avaliacoes/{avaliacao}/reenviar', [\App\Http\Controllers\Cliente\ClienteAvaliacaoController::class, 'reenviar'])->name('avaliacoes.reenviar');
+
+        // Push Tokens (notificações)
+        Route::post('push-tokens', [\App\Http\Controllers\Cliente\ClientePushTokenController::class, 'store'])->name('push-tokens.store');
+        Route::delete('push-tokens', [\App\Http\Controllers\Cliente\ClientePushTokenController::class, 'destroy'])->name('push-tokens.destroy');
 
         Route::post('logout', [\App\Http\Controllers\Cliente\ClienteAuthController::class, 'logout'])->name('logout');
     });
@@ -246,10 +256,21 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::middleware('admin.role:super_admin,comercial')->group(function () {
             Route::get('/pagamentos', [AdminPagamentoController::class, 'index'])->name('pagamentos');
             Route::get('/pagamentos/{pagamento}', [AdminPagamentoController::class, 'show'])->name('pagamentos.show');
-            Route::post('/pagamentos/{pagamento}/confirmar', [AdminPagamentoController::class, 'confirmar'])->name('pagamentos.confirmar');
-            Route::post('/pagamentos/{pagamento}/rejeitar', [AdminPagamentoController::class, 'rejeitar'])->name('pagamentos.rejeitar');
-            Route::get('/faturas', [AdminPagamentoController::class, 'faturas'])->name('faturas');
-            Route::get('/faturas/{fatura}/download', [AdminPagamentoController::class, 'faturaDownload'])->name('faturas.download');
+            Route::get('/faturas', [\App\Http\Controllers\Admin\FaturaController::class, 'index'])->name('faturas');
+            Route::get('/faturas/{fatura}', [\App\Http\Controllers\Admin\FaturaController::class, 'show'])->name('faturas.show');
+            Route::get('/faturas/{fatura}/download', [\App\Http\Controllers\Admin\FaturaController::class, 'download'])->name('faturas.download');
+            Route::get('/faturas/{fatura}/recibo', [\App\Http\Controllers\Admin\FaturaController::class, 'downloadRecibo'])->name('faturas.recibo');
+            Route::post('/faturas/{fatura}/reenviar', [\App\Http\Controllers\Admin\FaturaController::class, 'reenviar'])->name('faturas.reenviar');
+            Route::post('/faturas/{fatura}/aprovar', [\App\Http\Controllers\Admin\FaturaController::class, 'aprovar'])->name('faturas.aprovar');
+            Route::post('/faturas/{fatura}/rejeitar', [\App\Http\Controllers\Admin\FaturaController::class, 'rejeitar'])->name('faturas.rejeitar');
+            Route::post('/faturas/{fatura}/cancelar', [\App\Http\Controllers\Admin\FaturaController::class, 'cancelar'])->name('faturas.cancelar');
+        });
+
+        // Configurações da Empresa
+        Route::middleware('admin.role:super_admin')->group(function () {
+            Route::get('/empresa-config', [\App\Http\Controllers\Admin\EmpresaConfigController::class, 'edit'])->name('empresa-config');
+            Route::put('/empresa-config', [\App\Http\Controllers\Admin\EmpresaConfigController::class, 'update'])->name('empresa-config.update');
+            Route::post('/empresa-config/logo', [\App\Http\Controllers\Admin\EmpresaConfigController::class, 'uploadLogo'])->name('empresa-config.logo');
         });
 
         // Conteúdo

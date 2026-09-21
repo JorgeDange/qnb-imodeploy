@@ -8,6 +8,7 @@ use App\Models\ImobiliariaPlano;
 use App\Models\PedidoAtivacao;
 use App\Models\Setting;
 use App\Models\Imovel;
+use App\Models\AdminMensagem;
 use App\Models\ImovelFoto;
 use App\Models\CanalContacto;
 use App\Jobs\SendNovaImobiliariaEmail;
@@ -151,6 +152,27 @@ class PainelController extends Controller
         $imobiliaria = Auth::guard('imobiliaria')->user();
         $planos = Plano::where('ativo', true)->get();
         return view('painel.ativar-plano', compact('imobiliaria', 'planos'));
+    }
+
+    /**
+     * Criar fatura imediatamente ao selecionar plano.
+     * Redirect direto para a fatura (upload comprovativo).
+     */
+    public function criarFaturaPlano(Request $request)
+    {
+        $imobiliaria = Auth::guard('imobiliaria')->user();
+
+        $validated = $request->validate([
+            'plano_id' => 'required|exists:planos,id',
+        ]);
+
+        $plano = Plano::findOrFail($validated['plano_id']);
+
+        $service = app(PagamentoService::class);
+        $fatura = $service->criarFaturaDireta($imobiliaria, $plano);
+
+        return redirect()->route('painel.faturas.show', $fatura)
+            ->with('success', 'Fatura criada! Envie o comprovativo de pagamento para ativação do plano.');
     }
 
     // ==================== IMÓVEIS ====================
@@ -373,6 +395,71 @@ class PainelController extends Controller
         return redirect()->route('painel.mensagens');
     }
 
+    // ==================== MENSAGENS DO ADMIN ====================
+
+    public function adminMensagens()
+    {
+        $imobiliaria = Auth::guard('imobiliaria')->user();
+        $threads = AdminMensagem::where('imobiliaria_id', $imobiliaria->id)
+            ->whereNull('thread_id')
+            ->with(['admin', 'respostas.admin'])
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('painel.admin-mensagens', compact('imobiliaria', 'threads'));
+    }
+
+    public function adminMensagemShow($id)
+    {
+        $imobiliaria = Auth::guard('imobiliaria')->user();
+        $thread = AdminMensagem::where('imobiliaria_id', $imobiliaria->id)
+            ->where('id', $id)
+            ->with(['admin', 'respostas.admin'])
+            ->firstOrFail();
+
+        // Marcar como lida
+        if (!$thread->lida) {
+            $thread->update(['lida' => true, 'lida_em' => now()]);
+        }
+
+        return view('painel.admin-mensagem-show', compact('imobiliaria', 'thread'));
+    }
+
+    public function adminMensagemResponder(Request $request, $id)
+    {
+        $imobiliaria = Auth::guard('imobiliaria')->user();
+        $thread = AdminMensagem::where('imobiliaria_id', $imobiliaria->id)
+            ->where('id', $id)
+            ->firstOrFail();
+
+        $request->validate([
+            'texto' => 'required|string|min:5',
+        ]);
+
+        AdminMensagem::create([
+            'thread_id' => $thread->id,
+            'imobiliaria_id' => $imobiliaria->id,
+            'autor_tipo' => 'imobiliaria',
+            'texto' => $request->texto,
+            'lida' => false,
+        ]);
+
+        return redirect()->route('painel.admin-mensagens.show', $thread->id)
+            ->with('sucesso', 'Resposta enviada com sucesso.');
+    }
+
+    public function adminMensagemLida($id)
+    {
+        $imobiliaria = Auth::guard('imobiliaria')->user();
+        $thread = AdminMensagem::where('imobiliaria_id', $imobiliaria->id)
+            ->where('id', $id)
+            ->firstOrFail();
+
+        $thread->update(['lida' => true, 'lida_em' => now()]);
+
+        return redirect()->route('painel.admin-mensagens');
+    }
+
     // ==================== DESTAQUES ====================
 
     public function destaques()
@@ -426,8 +513,24 @@ class PainelController extends Controller
 
         if ($validated['estado'] === 'confirmada') {
             \App\Jobs\SendVisitaConfirmadaEmail::dispatch($visita);
+            if ($visita->cliente_id) {
+                \App\Services\PushNotificationService::enviar(
+                    $visita->cliente_id,
+                    'Visita confirmada',
+                    'A sua visita ao imóvel "' . $visita->imovel->titulo . '" foi confirmada para ' . $visita->data_visita->format('d/m/Y H:i') . '.',
+                    route('cliente.visitas')
+                );
+            }
         } elseif ($validated['estado'] === 'cancelada') {
             \App\Jobs\SendVisitaRecusadaEmail::dispatch($visita);
+            if ($visita->cliente_id) {
+                \App\Services\PushNotificationService::enviar(
+                    $visita->cliente_id,
+                    'Visita cancelada',
+                    'A sua visita ao imóvel "' . $visita->imovel->titulo . '" foi cancelada.',
+                    route('cliente.visitas')
+                );
+            }
         }
 
         return redirect()->route('painel.visitas')->with('success', 'Estado da visita atualizado.');
@@ -452,13 +555,23 @@ class PainelController extends Controller
 
         // Notificar cliente in-app (C7)
         if ($mensagem->cliente_id) {
+            $titulo = $validated['disponivel'] ? 'Imóvel disponível' : 'Imóvel indisponível';
+            $texto = $validated['disponivel']
+                ? 'Boa notícia! O imóvel "' . $imovel->titulo . '" que perguntou ainda está disponível.'
+                : 'Infelizmente o imóvel "' . $imovel->titulo . '" que perguntou já não está disponível.';
+
             \App\Services\Cliente\ClienteNotificacaoService::enviar(
                 $mensagem->cliente_id,
                 'mensagem',
-                $validated['disponivel'] ? 'Imóvel disponível' : 'Imóvel indisponível',
-                ($validated['disponivel']
-                    ? 'Boa notícia! O imóvel "' . $imovel->titulo . '" que perguntou ainda está disponível.'
-                    : 'Infelizmente o imóvel "' . $imovel->titulo . '" que perguntou já não está disponível.'),
+                $titulo,
+                $texto,
+                route('cliente.mensagens.show', $mensagem)
+            );
+
+            \App\Services\PushNotificationService::enviar(
+                $mensagem->cliente_id,
+                $titulo,
+                $texto,
                 route('cliente.mensagens.show', $mensagem)
             );
         }
@@ -574,7 +687,7 @@ class PainelController extends Controller
 
         $plano = Plano::findOrFail($validated['plano_id']);
 
-        $service = new PagamentoService();
+        $service = app(PagamentoService::class);
         $subscricao = $service->criarPagamento(
             $imobiliaria,
             $plano,
@@ -583,8 +696,8 @@ class PainelController extends Controller
             $request->file('comprovativo'),
         );
 
-        return redirect()->route('painel.pagamento.confirmado')
-            ->with('success', 'Pagamento submetido com sucesso! Aguarda validação da equipa QNB.');
+        return redirect()->route('painel.faturas')
+            ->with('success', 'Fatura criada com sucesso! Envie o comprovativo de pagamento para ativação do plano.');
     }
 
     public function pagamentoConfirmado()

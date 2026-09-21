@@ -3,10 +3,10 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 use App\Models\Imobiliaria;
 use App\Models\Plano;
+use App\Models\Fatura;
 use App\Models\ImobiliariaPlano;
 use App\Models\Pagamento;
 
@@ -38,34 +38,33 @@ class PagamentoTest extends TestCase
     }
 
     /** @test */
-    public function imobiliaria_pode_aceder_formulario_pagamento()
+    public function imobiliaria_pode_aceder_pagina_planos()
     {
         $imob = $this->criarImobiliaria();
         $this->actingAs($imob, 'imobiliaria');
 
-        $response = $this->get(route('painel.pagamento.novo'));
+        $response = $this->get(route('painel.ativar-plano'));
         $response->assertStatus(200);
-        $response->assertViewIs('painel.pagamento.novo');
+        $response->assertViewIs('painel.ativar-plano');
     }
 
     /** @test */
-    public function imobiliaria_pode_submeter_pagamento()
+    public function imobiliaria_pode_criar_fatura_ao_selecionar_plano()
     {
         $imob = $this->criarImobiliaria();
         $plano = $this->criarPlano();
         $this->actingAs($imob, 'imobiliaria');
 
-        $response = $this->post(route('painel.pagamento.salvar'), [
+        $response = $this->post(route('painel.ativar-plano.criar'), [
             'plano_id' => $plano->id,
-            'metodo' => 'transferencia',
-            'referencia' => 'REF-12345',
         ]);
 
-        $response->assertRedirect(route('painel.pagamento.confirmado'));
-        $this->assertDatabaseHas('pagamentos', [
+        $fatura = Fatura::where('imobiliaria_id', $imob->id)->first();
+        $response->assertRedirect(route('painel.faturas.show', $fatura));
+
+        $this->assertDatabaseHas('faturas', [
             'imobiliaria_id' => $imob->id,
             'estado' => 'pendente',
-            'metodo' => 'transferencia',
         ]);
         $this->assertDatabaseHas('imobiliaria_plano', [
             'imobiliaria_id' => $imob->id,
@@ -76,70 +75,31 @@ class PagamentoTest extends TestCase
     }
 
     /** @test */
-    public function imobiliaria_pode_submeter_pagamento_com_comprovativo()
-    {
-        $imob = $this->criarImobiliaria();
-        $plano = $this->criarPlano();
-        $this->actingAs($imob, 'imobiliaria');
-
-        $comprovativo = UploadedFile::fake()->image('comprovativo.jpg', 100, 100, 'jpg')->size(100);
-
-        $response = $this->post(route('painel.pagamento.salvar'), [
-            'plano_id' => $plano->id,
-            'metodo' => 'multicaixa',
-            'referencia' => 'MC-99999',
-            'comprovativo' => $comprovativo,
-        ]);
-
-        $response->assertRedirect(route('painel.pagamento.confirmado'));
-        $this->assertDatabaseHas('pagamentos', [
-            'imobiliaria_id' => $imob->id,
-            'metodo' => 'multicaixa',
-        ]);
-    }
-
-    /** @test */
-    public function metodo_pagamento_invalido_e_rejeitado()
-    {
-        $imob = $this->criarImobiliaria();
-        $plano = $this->criarPlano();
-        $this->actingAs($imob, 'imobiliaria');
-
-        $response = $this->post(route('painel.pagamento.salvar'), [
-            'plano_id' => $plano->id,
-            'metodo' => 'invalido',
-        ]);
-
-        $response->assertSessionHasErrors('metodo');
-    }
-
-    /** @test */
     public function plano_inexistente_e_rejeitado()
     {
         $imob = $this->criarImobiliaria();
         $this->actingAs($imob, 'imobiliaria');
 
-        $response = $this->post(route('painel.pagamento.salvar'), [
+        $response = $this->post(route('painel.ativar-plano.criar'), [
             'plano_id' => 9999,
-            'metodo' => 'transferencia',
         ]);
 
         $response->assertSessionHasErrors('plano_id');
     }
 
     /** @test */
-    public function imobiliaria_pode_ver_historico_pagamentos()
+    public function imobiliaria_pode_ver_lista_faturas()
     {
         $imob = $this->criarImobiliaria();
         $this->actingAs($imob, 'imobiliaria');
 
-        $response = $this->get(route('painel.pagamentos'));
+        $response = $this->get(route('painel.faturas'));
         $response->assertStatus(200);
-        $response->assertViewIs('painel.pagamentos.index');
+        $response->assertViewIs('painel.faturas.index');
     }
 
     /** @test */
-    public function imobiliaria_pode_ver_detalhe_pagamento()
+    public function imobiliaria_pode_ver_detalhe_fatura()
     {
         $imob = $this->criarImobiliaria();
         $plano = $this->criarPlano();
@@ -162,8 +122,23 @@ class PagamentoTest extends TestCase
             'estado' => 'pendente',
         ]);
 
-        $response = $this->get(route('painel.pagamentos.show', $pagamento->id));
+        $fatura = Fatura::create([
+            'numero' => Fatura::proximoNumero(),
+            'pagamento_id' => $pagamento->id,
+            'imobiliaria_id' => $imob->id,
+            'valor' => $plano->preco,
+            'moeda' => $plano->moeda,
+            'iva' => 0,
+            'subtotal' => $plano->preco,
+            'desconto' => 0,
+            'retencao' => 0,
+            'total' => $plano->preco,
+            'estado' => 'pendente',
+            'emitida_em' => now(),
+        ]);
+
+        $response = $this->get(route('painel.faturas.show', $fatura));
         $response->assertStatus(200);
-        $response->assertViewIs('painel.pagamentos.show');
+        $response->assertViewIs('painel.faturas.show');
     }
 }

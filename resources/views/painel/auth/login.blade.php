@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('painel-assets/css/painel.css') }}">
     <link rel="icon" type="image/svg+xml" href="{{ asset('assets/img/logo-c.svg') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 </head>
 
 <body>

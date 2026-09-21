@@ -435,5 +435,8 @@ class DatabaseSeeder extends Seeder
 
         // Cliente demo
         $this->call([ClienteDemoSeeder::class]);
+
+        // Configurações da empresa (faturação)
+        $this->call([EmpresaConfigSeeder::class]);
     }
 }
