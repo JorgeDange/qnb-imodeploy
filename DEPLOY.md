@@ -1,7 +1,35 @@
 # 🚀 DEPLOY — QNB-Imobiliária (Laravel 12)
 
-> Guia completo para colocar o backend Laravel em produção.
-> Criado em 2026-09-21 após verificação de preparação para hospedagem.
+> Guia completo para colocar em produção as **DUAS aplicações** do projeto:
+> - **qnb-imobiliaria** — site público + painel do anunciante + área do cliente → `www.qnbangola.com`
+> - **qnb-admin** — CRM interno (admin/moderador) → domínio separado (ver §10), ex. `admin.qnbangola.com`
+>
+> **Motivação da separação: segurança por isolamento de domínio** — os administradores não acedem pelo mesmo domínio do site. Ambas partilham a MESMA BD MySQL (ver `planMove.md` §1.1).
+>
+> Criado em 2026-09-21 · Atualizado com arquitetura de 2 apps após F0-F4 do planMove.md.
+
+---
+
+## 0. Visão geral das 2 apps (LER PRIMEIRO)
+
+| | qnb-imobiliaria | qnb-admin |
+|---|-----------------|-----------|
+| Conteúdo | Site público + painel anunciante + cliente | CRM admin/moderador |
+| Domínio | `www.qnbangola.com` | `admin.qnbangola.com` (ou domínio neutro) |
+| BD MySQL | `qnb_imobiliaria` | **a mesma** `qnb_imobiliaria` |
+| Migrations | **SÓ esta app corre migrations** | Nunca corre migrations |
+| Fila (queue) | `publico` | `admin` |
+| Guard de auth | `imobiliaria` + `cliente` | `admin` |
+| Observers | Sim (disparam emails públicos) | **Nenhum** (evita duplicados) |
+| APP_KEY | Própria | Própria (diferente) |
+| Health check | `/health` | `/health` |
+| Testes | 77 passed | 34 passed |
+
+**URLs cruzados (config/app.php):**
+- na imobiliaria: `ADMIN_URL` → domínio do CRM (usado em notificações in-app de faturas)
+- no qnb-admin: `FRONTEND_URL` → domínio do site (links "Ver site público")
+
+**Regra de ouro dos workers:** cada app processa APENAS a sua fila (`--queue=publico` / `--queue=admin`). Com a BD partilhada, a tabela `jobs` é única — sem filas nomeadas, o worker errado apanhava jobs de classes inexistentes na outra app (validado na F4).
 
 ---
 
@@ -9,20 +37,19 @@
 
 | Item | Estado | Nota |
 |------|--------|------|
-| Suite de testes | ✅ | 111 testes passam (9 skipped, 1 risky) |
-| `config:cache` / `route:cache` / `view:cache` | ✅ | Compilam sem erros |
-| APP_KEY | ✅ | Presente (gerar nova em produção!) |
-| `public/.htaccess` | ✅ | Existe (Apache) |
-| Health check | ✅ | `GET /health` retorna JSON com db/cache/storage |
+| Suite de testes | ✅ | qnb-imobiliaria: 77 passed · qnb-admin: 34 passed |
+| `config:cache` / `route:cache` / `view:cache` | ✅ | Compilam sem erros nas 2 apps |
+| APP_KEY | ✅ | Presente (gerar NOVA em produção em cada app!) |
+| `public/.htaccess` | ✅ | Existe nas 2 apps |
+| Health check | ✅ | `GET /health` nas 2 apps |
 | Assets (JS/CSS) | ✅ | 100% locais, sem CDN externo |
-| Queue/Sessions/Cache | ✅ | Driver `database` (funciona em hospedagem partilhada) |
+| Queue/Sessions/Cache | ✅ | Driver `database` + filas nomeadas por app |
 | Vite build | ✅ | Views não usam `@vite` — **não é preciso `npm run build`** |
-| `.env.example` | ⚠️ | Estava genérico (SQLite) — atualizado para MySQL |
-| Scheduler (cron) | ⚠️ | Comandos comentados em `routes/console.php` |
-| Módulos 9-10 (.env completo, segurança) | ⚠️ | Pendentes conforme memoria.md — este documento cobre o essencial |
+| `.env.example` | ✅ | MySQL + locale pt nas 2 apps |
+| Scheduler (cron) | ⚠️ | Comandos comentados em `routes/console.php` (imobiliaria) |
 | Credenciais demo (demo@ / admin@) | 🔴 | **Nunca semear dados demo em produção** |
 
-**Conclusão: o sistema ESTÁ PRONTO para hospedagem**, desde que as configurações de produção abaixo sejam aplicadas.
+**Conclusão: as DUAS apps estão prontas para hospedagem**, desde que as configurações abaixo sejam aplicadas.
 
 ---
 
@@ -84,11 +111,30 @@ MAIL_FROM_NAME="${APP_NAME}"
 
 # ─── FICHEIROS / OUTROS ────────────────────────────────────
 FILESYSTEM_DISK=public
-FRONTEND_URL=https://www.qnbangola.com
+FRONTEND_URL=https://www.qnbangola.com    # o próprio domínio
+ADMIN_URL=https://admin.qnbangola.com     # ← domínio do CRM (qnb-admin)
+DB_QUEUE=publico                          # ← fila desta app (NUNCA mudar)
 LOG_CHANNEL=daily               # roda logs por dia (evita ficheiro gigante)
 LOG_LEVEL=error                 # menos ruído em produção
 BCRYPT_ROUNDS=12
 ```
+
+### 3.1 `.env` de produção do **qnb-admin** (diferenças em relação a cima)
+
+```bash
+APP_NAME="QNB Admin (CRM)"
+APP_URL=https://admin.qnbangola.com       # domínio do CRM
+FRONTEND_URL=https://www.qnbangola.com    # domínio do site (links "Ver site")
+# ADMIN_URL — não é usado no qnb-admin
+DB_QUEUE=admin                            # ← fila desta app (NUNCA mudar)
+# DB_* — MESMOS valores da imobiliaria (BD partilhada)
+# MAIL_* — MESMO SMTP (emails de aprovações saem do CRM)
+SESSION_ENCRYPT=true
+SESSION_SECURE_COOKIE=true
+APP_DEBUG=false
+```
+> `APP_KEY` do qnb-admin tem de ser **diferente** da da imobiliaria (cada app gera a sua com `php artisan key:generate`).
+> **O qnb-admin NUNCA corre `php artisan migrate`** — o schema é gerido exclusivamente pela imobiliaria.
 
 ### ⚠️ Pontos críticos do `.env`
 
@@ -158,10 +204,11 @@ $app = require_once __DIR__.'/../qnb-app/qnb-imobiliaria/bootstrap/app.php';
 
 ### Passo 7 — Worker de filas (obrigatório)
 Os emails são enviados via fila (`QUEUE_CONNECTION=database`). Sem worker, **ninguém recebe email**.
+**Esta app processa APENAS a fila `publico`** (a fila `admin` é do CRM).
 
 **cPanel → Cron Jobs**, adicionar (a cada minuto):
 ```bash
-* * * * * cd /home/USER/qnb-app/qnb-imobiliaria && php artisan queue:work --stop-when-empty --tries=3 --max-time=55 >> /dev/null 2>&1
+* * * * * cd /home/USER/qnb-app/qnb-imobiliaria && php artisan queue:work --stop-when-empty --tries=3 --max-time=55 --queue=publico >> /dev/null 2>&1
 ```
 
 ### Passo 8 — Scheduler (cron do Laravel)
@@ -232,7 +279,7 @@ sudo certbot --nginx -d qnbangola.com -d www.qnbangola.com   # HTTPS grátis
 ### Supervisor para o worker de filas (`/etc/supervisor/conf.d/qnb-worker.conf`)
 ```ini
 [program:qnb-worker]
-command=php /var/www/qnb/qnb-imobiliaria/artisan queue:work --tries=3 --max-time=3600
+command=php /var/www/qnb/qnb-imobiliaria/artisan queue:work --tries=3 --max-time=3600 --queue=publico
 autostart=true
 autorestart=true
 user=www-data
@@ -270,11 +317,11 @@ php artisan config:cache && php artisan route:cache && php artisan view:cache
 php artisan queue:restart
 ```
 
-### Verificações manuais
+### Verificações manuais (qnb-imobiliaria)
 - [ ] `https://DOMINIO/health` → `{"status":"healthy", ...}`
-- [ ] Home carrega com imóveis (sem dados demo se BD limpa — criar 1º admin: ver secção 7)
+- [ ] Home carrega com imóveis (sem dados demo se BD limpa)
 - [ ] Login do painel `/painel/login` funciona
-- [ ] Login do CRM `/admin/login` funciona
+- [ ] **NÃO existe `/admin/login` nesta app** (o CRM vive no outro domínio — deve dar 404)
 - [ ] Upload de fotos num imóvel de teste → imagem visível em `public/storage/imoveis/...`
 - [ ] Fatura PDF (`/faturas/{id}/download`) gera sem erro
 - [ ] Email de registo de cliente chega à caixa de entrada (verificar **não** em spam; configurar SPF/DKIM no DNS)
@@ -365,14 +412,113 @@ php artisan queue:restart
 |----------|------------------------|----------|
 | `APP_ENV` | `local` | `production` |
 | `APP_DEBUG` | `true` | `false` |
-| `APP_URL` | `http://127.0.0.1:8899` | `https://www.qnbangola.com` |
-| `APP_LOCALE` | `en` | `pt` |
+| `APP_URL` | `http://127.0.0.1:8899` / `:8898` | `https://www.qnbangola.com` / `https://admin.qnbangola.com` |
+| `APP_LOCALE` | `pt` | `pt` |
 | `MAIL_MAILER` | `log` | `smtp` com credenciais reais |
 | `LOG_CHANNEL` | `stack`/`single` | `daily` |
 | `LOG_LEVEL` | `debug` | `error` |
 | `DB_USERNAME` | `root` | utilizador dedicado com password forte |
-| `FRONTEND_URL` | `http://localhost:8080` | `https://www.qnbangola.com` |
+| `FRONTEND_URL` | `http://127.0.0.1:8899` | `https://www.qnbangola.com` |
+| `ADMIN_URL` | `http://127.0.0.1:8898` | `https://admin.qnbangola.com` |
+| `DB_QUEUE` | `publico` / `admin` | **mantém** (`publico` na site app, `admin` no CRM) |
 
 ---
 
-*Documento gerado após verificação de 2026-09-21. Atualizar sempre que a stack ou o fluxo de deploy mudar.*
+## 11. Deploy do qnb-admin (CRM) — segundo hosting
+
+> Requisito de segurança (planMove.md §1.1 e §9): o CRM vive num domínio SEPARADO do site.
+> A ordem recomendada é: **primeiro a imobiliaria (secções 4/5), depois o qnb-admin.**
+
+### Passo 1 — Escolher o modelo de hosting
+
+| Modelo | Vantagens | Desvantagens |
+|--------|-----------|--------------|
+| **A. Mesma conta de hosting, domínio adicional** `admin.qnbangola.com` | BD fica LOCAL para ambas (rápido, sem MySQL remoto); 1 só fatura | CRM "descobrível" por quem conhece o domínio |
+| **B. Hosting totalmente separado** (ex.: outro fornecedor) | CRM invisível ao hosting do site; isolamento máximo | MySQL remoto (latência + configurar SSL/IP whitelist); uploads partilhados complicados (ver §12) |
+
+> Recomendação prática: **Modelo A** para começar (simples e rápido), migrando para B mais tarde se a segurança exigir. Com o Modelo A, o endurecimento da secção 9 (IP whitelist/Basic Auth) torna-se ainda mais importante.
+
+### Passo 2 — Instalar (cPanel)
+```bash
+cd ~
+git clone https://github.com/SEU_USER/qnb.git qnb-admin-app
+cd qnb-admin-app/qnb-admin
+composer install --no-dev --optimize-autoloader
+cp .env.example .env
+php artisan key:generate --force     # APP_KEY PRÓPRIA (≠ da imobiliaria)
+# ⚠️ NUNCA correr php artisan migrate nesta app!
+php artisan storage:link
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+```
+
+### Passo 3 — `.env` de produção (resumo)
+Ver secção 3.1. Essencial: `DB_*` iguais aos da imobiliaria, `DB_QUEUE=admin`, `FRONTEND_URL` = domínio do site, `APP_DEBUG=false`, `SESSION_SECURE_COOKIE=true`.
+
+### Passo 4 — Apontar o domínio
+cPanel → Domains → criar domínio adicional/subdomínio `admin.qnbangola.com` com Document Root:
+```
+/home/USER/qnb-admin-app/qnb-admin/public
+```
+
+### Passo 5 — Worker da fila do CRM
+cPanel → Cron Jobs (a cada minuto):
+```bash
+* * * * * cd /home/USER/qnb-admin-app/qnb-admin && php artisan queue:work --stop-when-empty --tries=3 --max-time=55 --queue=admin >> /dev/null 2>&1
+```
+
+### Passo 6 — Primeiro administrador do CRM
+O admin não vem de seeders de demo. Criar via tinker:
+```bash
+php artisan tinker
+```
+```php
+\App\Models\Admin::create([
+    'nome' => 'Jorge Dange',
+    'email' => 'jorge@qnbangola.com',
+    'password' => bcrypt('PALAVRA-PASSE_FORTE'),
+    'role' => 'super_admin',
+    'ativo' => true,
+]);
+```
+
+### Passo 7 — Endurecimento do domínio (OBRIGATÓRIO — planMove.md §9)
+- [ ] `robots.txt` no `public/` do qnb-admin: `User-agent: *\nDisallow: /`
+- [ ] Header `X-Robots-Tag: noindex, nofollow` (`.htaccess` ou Nginx)
+- [ ] cPanel → Directory Privacy (Basic Auth) sobre a pasta do CRM, **OU** IP whitelist:
+```apache
+# public/.htaccess do qnb-admin (antes das regras do Laravel)
+<RequireAny>
+    Require ip XXX.XXX.XXX.XXX   # IP fixo da equipa QNB
+    Require ip YYY.YYY.YYY.YYY
+</RequireAny>
+```
+- [ ] HTTPS (AutoSSL/Let's Encrypt) + `SESSION_SECURE_COOKIE=true` + `SESSION_ENCRYPT=true`
+- [ ] Headers de segurança (secção 8) aplicados também neste domínio
+- [ ] `/health` protegido (Basic Auth acima já o protege)
+- [ ] Verificar que NENHUM email/página pública do site revela o domínio do CRM
+- [ ] Nenhum link do site aponta para o CRM (auditar: `grep -rn "ADMIN_URL\|admin_url" resources/views/` na imobiliaria — só pode aparecer em notificações in-app/emails PRIVADOS de admins)
+
+### Passo 8 — Verificações finais (2 domínios)
+- [ ] `https://admin.qnbangola.com/admin/login` carrega e o login funciona
+- [ ] `https://www.qnbangola.com/admin/login` dá **404** (rotas admin não existem no site)
+- [ ] Aprovar um imóvel no CRM → aparece no site
+- [ ] Submeter comprovativo no painel do anunciante → aparece no CRM
+- [ ] Emails chegam SEM duplicados (1 aprovação = 1 email)
+- [ ] `https://admin.qnbangola.com/health` → healthy
+
+---
+
+## 12. Uploads partilhados entre as 2 apps (atenção!)
+
+A BD é partilhada, mas o **disco NÃO é**: os paths dos uploads (`imoveis/foto1.jpg`, `faturas/FT-2026-0001.pdf`, comprovativos...) ficam em `storage/app/public` de CADA app.
+
+| Modelo de hosting (§11) | Solução de uploads |
+|------------------------|--------------------|
+| **A. Mesma conta cPanel** | As 2 apps podem apontar para a MESMA pasta: no qnb-admin, recriar o link `public/storage` como symlink (Linux) para a pasta da imobiliaria: `ln -sfn /home/USER/qnb-app/qnb-imobiliaria/storage/app/public /home/USER/qnb-admin-app/qnb-admin/public/storage` |
+| **B. Hostings separados** | Opções: (1) sincronização via rsync cron; (2) migrar `FILESYSTEM_DISK` para S3/Cloudflare R2/DigitalOcean Spaces (recomendado a medio prazo — editar `config/filesystems.php` nas 2 apps); (3) servir uploads por URL absoluto do hosting A |
+
+> No dev local (Windows) já está resolvido: junction `qnb-admin/public/storage` → `qnb-imobiliaria/storage/app/public`.
+
+---
+
+*Documento gerado após verificação de 2026-09-21. Atualizado com arquitetura de 2 apps (F0-F4 do planMove.md). Atualizar sempre que a stack ou o fluxo de deploy mudar.*
