@@ -64,6 +64,13 @@ class PagamentoService
         // 4. Notificar admin
         SendPagamentoRecebidoEmail::dispatch($pagamento);
 
+        // 5. Enviar fatura à imobiliária
+        if ($imobiliaria->email) {
+            \Illuminate\Support\Facades\Mail::to($imobiliaria->email)->queue(
+                new \App\Mail\FaturaEmitidaMail($fatura)
+            );
+        }
+
         return $subscricao;
     }
 
@@ -167,6 +174,13 @@ class PagamentoService
 
         // 3. Criar fatura (pendente — imobiliária envia comprovativo depois)
         $fatura = $this->criarFatura($pagamento, $plano, null);
+
+        // 4. Enviar fatura à imobiliária por email
+        if ($imobiliaria->email) {
+            \Illuminate\Support\Facades\Mail::to($imobiliaria->email)->queue(
+                new \App\Mail\FaturaEmitidaMail($fatura)
+            );
+        }
 
         return $fatura;
     }
