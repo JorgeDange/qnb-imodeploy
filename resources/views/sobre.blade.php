@@ -78,15 +78,6 @@
         <div class="wow animate__fadeInUp">
             <div class="ul-partners-slider swiper">
                 <div class="swiper-wrapper align-items-center">
-                    @if($parceiros->count())
-                    @foreach($parceiros as $parceiro)
-                    <!-- single slide -->
-                    <div class="swiper-slide">
-                        <img src="{{ asset('storage/' . $parceiro->logo) }}" alt="{{ $parceiro->nome }}">
-                    </div>
-                    @endforeach
-                    @else
-                    <!-- fallback -->
                     <div class="swiper-slide"><img src="{{ asset('assets/img/logo-c.svg') }}" alt="Parter Logo"></div>
                     <div class="swiper-slide"><img src="{{ asset('assets/img/logo-c.svg') }}" alt="Parter Logo"></div>
                     <div class="swiper-slide"><img src="{{ asset('assets/img/logo-c.svg') }}" alt="Parter Logo"></div>
@@ -95,7 +86,6 @@
                     <div class="swiper-slide"><img src="{{ asset('assets/img/logo-c.svg') }}" alt="Parter Logo"></div>
                     <div class="swiper-slide"><img src="{{ asset('assets/img/logo-c.svg') }}" alt="Parter Logo"></div>
                     <div class="swiper-slide"><img src="{{ asset('assets/img/logo-c.svg') }}" alt="Parter Logo"></div>
-                    @endif
                 </div>
             </div>
         </div>
