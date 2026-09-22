@@ -28,6 +28,12 @@
     <div class="ul-inner-page-container">
         @include('cliente.flash_messages')
         <div class="cliente-layout">
+            <!-- Hamburger (mobile) -->
+            <button class="cliente-sidebar-toggle" aria-label="Menu">
+                <i class="bi bi-list"></i> Menu
+            </button>
+            <!-- Overlay (mobile) -->
+            <div class="cliente-sidebar-overlay"></div>
             @include('cliente.partials._sidebar')
             <div class="cliente-content">
                 @yield('cliente-content')
@@ -35,4 +41,28 @@
         </div>
     </div>
 </div>
+
+<!-- BOTTOM NAV (mobile) -->
+<nav class="cliente-bottomnav">
+    <a href="{{ route('cliente.dashboard') }}" class="cliente-bottomnav-item">
+        <i class="bi bi-house-door"></i>
+        <span>Início</span>
+    </a>
+    <a href="{{ route('cliente.favoritos') }}" class="cliente-bottomnav-item">
+        <i class="bi bi-heart"></i>
+        <span>Favoritos</span>
+    </a>
+    <a href="{{ route('cliente.mensagens') }}" class="cliente-bottomnav-item">
+        <i class="bi bi-envelope"></i>
+        <span>Msgs</span>
+    </a>
+    <a href="{{ route('cliente.visitas') }}" class="cliente-bottomnav-item">
+        <i class="bi bi-calendar-check"></i>
+        <span>Visitas</span>
+    </a>
+    <a href="{{ route('cliente.perfil') }}" class="cliente-bottomnav-item">
+        <i class="bi bi-person-circle"></i>
+        <span>Perfil</span>
+    </a>
+</nav>
 @endsection

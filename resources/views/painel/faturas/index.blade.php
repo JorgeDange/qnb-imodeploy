@@ -26,10 +26,10 @@
             <tbody>
                 @foreach($faturas as $f)
                 <tr>
-                    <td><strong>{{ $f->numero }}</strong></td>
-                    <td>{{ $f->emitida_em ? $f->emitida_em->format('d/m/Y H:i') : '—' }}</td>
-                    <td><strong>{{ number_format($f->total, 2, ',', '.') }}</strong> {{ $f->moeda }}</td>
-                    <td>
+                    <td data-label="Número"><strong>{{ $f->numero }}</strong></td>
+                    <td data-label="Data">{{ $f->emitida_em ? $f->emitida_em->format('d/m/Y H:i') : '—' }}</td>
+                    <td data-label="Total"><strong>{{ number_format($f->total, 2, ',', '.') }}</strong> {{ $f->moeda }}</td>
+                    <td data-label="Estado">
                         @php
                             $badge = match($f->estado) {
                                 'paga' => 'ul-badge--sucesso',
@@ -42,7 +42,7 @@
                             $label = match($f->estado) {
                                 'paga' => 'Paga',
                                 'pendente' => 'Pendente',
-                                'aguarda_aprovacao' => 'Aguarda Aprovacao',
+                                'aguarda_aprovacao' => 'Aguarda Aprovação',
                                 'rejeitada' => 'Rejeitada',
                                 'cancelada' => 'Cancelada',
                                 'expirada' => 'Expirada',
@@ -51,12 +51,14 @@
                         @endphp
                         <span class="ul-badge {{ $badge }}">{{ $label }}</span>
                     </td>
-                    <td>
-                        <a href="{{ route('painel.faturas.show', $f) }}" class="ul-btn ul-btn--sm">Ver</a>
-                        <a href="{{ route('painel.faturas.download', $f) }}" class="ul-btn ul-btn--sm ul-btn--azul">PDF</a>
-                        @if($f->isPaga() && $f->recibo_pdf_path)
-                        <a href="{{ route('painel.faturas.recibo', $f) }}" class="ul-btn ul-btn--sm ul-btn--verde">Recibo</a>
-                        @endif
+                    <td data-label="Ações">
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <a href="{{ route('painel.faturas.show', $f) }}" class="ul-btn ul-btn--sm">Ver</a>
+                            <a href="{{ route('painel.faturas.download', $f) }}" class="ul-btn ul-btn--sm ul-btn--azul">PDF</a>
+                            @if($f->isPaga() && $f->recibo_pdf_path)
+                            <a href="{{ route('painel.faturas.recibo', $f) }}" class="ul-btn ul-btn--sm ul-btn--verde">Recibo</a>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @endforeach

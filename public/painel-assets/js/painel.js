@@ -6,21 +6,57 @@ document.addEventListener('DOMContentLoaded', function () {
     // Sidebar toggle (mobile)
     const toggle = document.querySelector('.ul-painel-sidebar-toggle');
     const sidebar = document.querySelector('.ul-painel-sidebar');
+    const overlay = document.querySelector('.ul-painel-sidebar-overlay');
+    const fechar = document.querySelector('.ul-painel-sidebar-fechar');
+
+    function openSidebar() {
+        sidebar.classList.add('open');
+        if (overlay) overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
 
     if (toggle && sidebar) {
         toggle.addEventListener('click', function () {
-            sidebar.classList.toggle('open');
-        });
-
-        // Close on click outside
-        document.addEventListener('click', function (e) {
-            if (sidebar.classList.contains('open') &&
-                !sidebar.contains(e.target) &&
-                !toggle.contains(e.target)) {
-                sidebar.classList.remove('open');
+            if (sidebar.classList.contains('open')) {
+                closeSidebar();
+            } else {
+                openSidebar();
             }
         });
     }
+
+    // Close on overlay click
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
+    }
+
+    // Close on X button
+    if (fechar) {
+        fechar.addEventListener('click', closeSidebar);
+    }
+
+    // Close on click outside sidebar
+    document.addEventListener('click', function (e) {
+        if (sidebar && sidebar.classList.contains('open') &&
+            !sidebar.contains(e.target) &&
+            !toggle.contains(e.target)) {
+            closeSidebar();
+        }
+    });
+
+    // Close sidebar when clicking a nav link (mobile)
+    sidebar.querySelectorAll('.ul-painel-nav a').forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (window.innerWidth <= 991) {
+                closeSidebar();
+            }
+        });
+    });
 
     // Close alerts after 5s
     document.querySelectorAll('.alert-success').forEach(function (alert) {

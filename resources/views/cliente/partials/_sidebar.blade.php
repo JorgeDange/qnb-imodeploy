@@ -1,6 +1,9 @@
 @if(Auth::guard('cliente')->check())
     @php $user = Auth::guard('cliente')->user(); @endphp
     <div class="cliente-sidebar">
+        <button class="cliente-sidebar-fechar" aria-label="Fechar menu">
+            <i class="bi bi-x-lg"></i>
+        </button>
         <div class="sidebar-user">
             <div class="user-avatar">
                 @if($user->foto)
@@ -73,10 +76,13 @@
         </nav>
         
         <div class="sidebar-footer">
-            <a href="{{ route('cliente.logout') }}" class="sidebar-logout">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sair</span>
-            </a>
+            <form action="{{ route('cliente.logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="sidebar-logout" style="background:none;border:none;cursor:pointer;width:100%;text-align:left;font:inherit;color:inherit;">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Sair</span>
+                </button>
+            </form>
         </div>
     </div>
 @endif

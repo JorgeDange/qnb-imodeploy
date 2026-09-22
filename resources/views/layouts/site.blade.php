@@ -22,6 +22,92 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="icon" type="image/svg+xml" href="{{ asset('assets/img/logo-c.svg') }}">
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <!-- Auth sidebar styles (inline para garantir load) -->
+    <style>
+        .ul-sidebar-auth {
+            padding: 15px 20px;
+            display: flex !important;
+            flex-direction: column;
+            gap: 8px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin-bottom: 12px;
+        }
+        .ul-sidebar-auth-btn {
+            display: flex !important;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none !important;
+            transition: all 0.25s ease;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            justify-content: center;
+            box-sizing: border-box;
+            line-height: 1.4;
+        }
+        .ul-sidebar-auth-btn i {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .ul-sidebar-auth-btn--imob {
+            background-color: #064471;
+            color: #fff !important;
+        }
+        .ul-sidebar-auth-btn--imob:hover {
+            background-color: #043a5e;
+            color: #fff !important;
+        }
+        .ul-sidebar-auth-btn--cliente {
+            background-color: #e94e19;
+            color: #fff !important;
+        }
+        .ul-sidebar-auth-btn--cliente:hover {
+            background-color: #d1420f;
+            color: #fff !important;
+        }
+        .ul-sidebar-auth-btn--outline {
+            background-color: transparent;
+            border: 1.5px solid rgba(0,0,0,0.15);
+            color: #000 !important;
+        }
+        .ul-sidebar-auth-btn--imob.ul-sidebar-auth-btn--outline {
+            border-color: #064471;
+            color: #064471 !important;
+        }
+        .ul-sidebar-auth-btn--imob.ul-sidebar-auth-btn--outline:hover {
+            background-color: #064471;
+            color: #fff !important;
+        }
+        .ul-sidebar-auth-btn--cliente.ul-sidebar-auth-btn--outline {
+            border-color: #e94e19;
+            color: #e94e19 !important;
+        }
+        .ul-sidebar-auth-btn--cliente.ul-sidebar-auth-btn--outline:hover {
+            background-color: #e94e19;
+            color: #fff !important;
+        }
+        .ul-sidebar-auth-btn--sair {
+            background-color: transparent;
+            border: 1.5px solid rgba(0,0,0,0.15);
+            color: #666 !important;
+            font-family: inherit;
+            text-align: left;
+            justify-content: flex-start;
+        }
+        .ul-sidebar-auth-btn--sair:hover {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #ef4444 !important;
+        }
+        @media screen and (min-width: 992px) {
+            .ul-sidebar-auth { display: none !important; }
+        }
+    </style>
+
     @stack('styles')
 </head>
 
@@ -44,6 +130,35 @@
         </div>
 
         <div class="ul-sidebar-header-nav-wrapper d-block d-lg-none"></div>
+
+        <!-- Auth links — visíveis só no sidebar mobile -->
+        <div class="ul-sidebar-auth">
+            @guest('cliente')
+                <a href="{{ route('painel.login') }}" class="ul-sidebar-auth-btn ul-sidebar-auth-btn--imob">
+                    <i class="bi bi-buildings"></i> Entrar como Imobiliária
+                </a>
+                <a href="{{ route('painel.registo') }}" class="ul-sidebar-auth-btn ul-sidebar-auth-btn--imob ul-sidebar-auth-btn--outline">
+                    <i class="bi bi-building-add"></i> Registar Imobiliária
+                </a>
+                <a href="{{ route('cliente.login') }}" class="ul-sidebar-auth-btn ul-sidebar-auth-btn--cliente">
+                    <i class="bi bi-person"></i> Entrar como Cliente
+                </a>
+                <a href="{{ route('cliente.registo') }}" class="ul-sidebar-auth-btn ul-sidebar-auth-btn--cliente ul-sidebar-auth-btn--outline">
+                    <i class="bi bi-person-plus"></i> Registar Cliente
+                </a>
+            @endguest
+            @auth('cliente')
+                <a href="{{ route('cliente.dashboard') }}" class="ul-sidebar-auth-btn ul-sidebar-auth-btn--cliente">
+                    <i class="bi bi-person-circle"></i> {{ auth('cliente')->user()->nome }}
+                </a>
+                <form action="{{ route('cliente.logout') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="ul-sidebar-auth-btn ul-sidebar-auth-btn--sair">
+                        <i class="bi bi-box-arrow-right"></i> Sair
+                    </button>
+                </form>
+            @endauth
+        </div>
 
         <p class="ul-sidebar-descr d-none d-lg-flex">A QNB-Imobiliária é a plataforma digital onde empresas e imobiliárias anunciam os seus imóveis para fins comerciais. Com anúncios em Luanda, Benguela, Huambo e Huíla, o contacto com o responsável por cada anúncio é sempre direto.</p>
 

@@ -41,9 +41,9 @@
         <tbody>
             @forelse($visitas as $visita)
             <tr>
-                <td>{{ $visita->imovel->titulo ?? '—' }}</td>
-                <td>{{ $visita->cliente_nome }}</td>
-                <td>
+                <td data-label="Imóvel">{{ $visita->imovel->titulo ?? '—' }}</td>
+                <td data-label="Cliente">{{ $visita->cliente_nome }}</td>
+                <td data-label="Contacto">
                     @if($visita->cliente_email && str_contains($visita->cliente_email, '@'))
                         <a href="mailto:{{ $visita->cliente_email }}" style="color:var(--ul-blue);text-decoration:none;">{{ $visita->cliente_email }}</a>
                     @elseif($visita->cliente_telefone)
@@ -52,8 +52,8 @@
                         —
                     @endif
                 </td>
-                <td>{{ $visita->data_visita->format('d/m/Y H:i') }}</td>
-                <td>
+                <td data-label="Data/Hora">{{ $visita->data_visita->format('d/m/Y H:i') }}</td>
+                <td data-label="Estado">
                     @if($visita->estado === 'pendente')
                         <span class="ul-badge ul-badge--pendente">Pendente</span>
                     @elseif($visita->estado === 'confirmada')
@@ -64,7 +64,7 @@
                         <span class="ul-badge ul-badge--rejeitado">Cancelada</span>
                     @endif
                 </td>
-                <td>
+                <td data-label="Ações">
                     <div style="display:flex;gap:6px;flex-wrap:wrap;">
                         @if($visita->estado === 'pendente')
                             <form action="{{ route('painel.visitas.estado', $visita) }}" method="POST">

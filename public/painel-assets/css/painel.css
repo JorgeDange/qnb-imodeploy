@@ -102,15 +102,6 @@ body {
   height: calc(100vh - 64px);
   overflow-y: auto;
 }
-@media (max-width: 991px) {
-  .ul-painel-sidebar {
-    position: static;
-    width: 100%;
-    height: auto;
-    border-right: none;
-    border-bottom: 1px solid var(--ul-gray);
-  }
-}
 
 .ul-painel-sidebar-perfil {
   text-align: center;
@@ -151,12 +142,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-@media (max-width: 991px) {
-  .ul-painel-nav {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
 }
 .ul-painel-nav li a {
   display: flex;
@@ -1556,5 +1541,490 @@ body {
 @media (max-width: 768px) {
   .ul_chart_height {
     height: 220px;
+  }
+}
+
+/* ============================================================
+   39. MOBILE SIDEBAR — Off-canvas slide (≤991px)
+   ============================================================ */
+
+/* Botão hamburger — só aparece em mobile */
+.ul-painel-sidebar-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.12);
+  color: var(--white);
+  font-size: 22px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+.ul-painel-sidebar-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+/* Botão fechar dentro da sidebar */
+.ul-painel-sidebar-fechar {
+  display: none;
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--ul-gray);
+  color: var(--ul-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background-color 0.2s;
+}
+.ul-painel-sidebar-fechar:hover {
+  background-color: #e2e8f0;
+}
+
+/* Overlay escurecido */
+.ul-painel-sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  z-index: 999;
+  transition: opacity 0.3s;
+}
+.ul-painel-sidebar-overlay.active {
+  display: block;
+}
+
+/* === BREAKPOINT MOBILE === */
+@media (max-width: 991px) {
+
+  /* Hamburger visível */
+  .ul-painel-sidebar-toggle {
+    display: flex;
+  }
+
+  /* Sidebar: off-canvas à esquerda */
+  .ul-painel-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 100%;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    border-right: none;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+    padding-top: 20px;
+    overflow-y: auto;
+  }
+  .ul-painel-sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Botão fechar visível */
+  .ul-painel-sidebar-fechar {
+    display: flex;
+  }
+
+  /* Perfil compacto */
+  .ul-painel-sidebar-perfil {
+    padding-bottom: 12px;
+    margin-bottom: 10px;
+  }
+  .ul-painel-sidebar-perfil .ul-painel-avatar {
+    width: 48px;
+    height: 48px;
+  }
+  .ul-painel-sidebar-perfil .ul-painel-nome {
+    font-size: 14px;
+  }
+  .ul-painel-sidebar-perfil .ul-painel-email {
+    font-size: 11px;
+  }
+
+  /* Nav: esconder section labels */
+  .ul-painel-nav-seccao {
+    display: none;
+  }
+
+  /* Nav: items compactos */
+  .ul-painel-nav li a {
+    padding: 10px 14px;
+    font-size: 13.5px;
+    gap: 10px;
+  }
+  .ul-painel-nav li a i {
+    font-size: 15px;
+  }
+
+  /* Badges menores */
+  .ul-painel-nav-badge {
+    font-size: 10px;
+    padding: 2px 7px;
+    min-width: 18px;
+    height: 18px;
+  }
+
+  /* Topbar: ajustar padding */
+  .ul-painel-topbar {
+    padding: 10px 16px;
+  }
+
+  /* Ver site público: esconder em mobile muito pequeno */
+  .ul-painel-ver-site {
+    display: none;
+  }
+}
+
+/* Mobile pequeno (≤480px): sidebar um pouco mais estreita */
+@media (max-width: 480px) {
+  .ul-painel-sidebar {
+    width: 260px;
+  }
+}
+
+/* ============================================================
+   40. TABELAS RESPONSIVAS → CARDS (≤767px)
+   ============================================================ */
+@media (max-width: 767px) {
+
+  /* Esconder thead */
+  .ul-painel-tabela thead {
+    display: none;
+  }
+
+  /* Cada tr vira um card */
+  .ul-painel-tabela tbody tr {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--white);
+    border: 1px solid var(--ul-gray);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 4px 6px 12px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Cada td vira uma linha com label */
+  .ul-painel-tabela tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--ul-gray);
+    text-align: right;
+    gap: 12px;
+    min-height: 32px;
+  }
+
+  /* Último td sem borda */
+  .ul-painel-tabela tbody td:last-child {
+    border-bottom: none;
+    padding-top: 12px;
+  }
+
+  /* Label via data-label */
+  .ul-painel-tabela tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--ul-gray2);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    text-align: left;
+  }
+
+  /* Coluna de ações: alinhar à direita */
+  .ul-painel-tabela tbody td[data-label="Ações"] {
+    justify-content: flex-end;
+  }
+
+  /* Coluna de ações: esconder label */
+  .ul-painel-tabela tbody td[data-label="Ações"]::before {
+    display: none;
+  }
+
+  /* Badges e links mantêm estilo */
+  .ul-painel-tabela tbody td .ul-badge,
+  .ul-painel-tabela tbody td .ul-btn {
+    font-size: 12px;
+  }
+
+  /* Wrap dos botões de ação */
+  .ul-painel-tabela tbody td[data-label="Ações"] > div {
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  /* Empty state */
+  .ul-painel-tabela tbody td.ul-painel-vazio {
+    display: block;
+    text-align: center;
+    padding: 30px 16px;
+  }
+}
+
+/* ============================================================
+   41. BOTÕES DE AÇÃO — mobile (≤767px)
+   ============================================================ */
+@media (max-width: 767px) {
+
+  /* --- Imóveis: ações empilham --- */
+  .ul-painel-imovel-acoes {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    width: 100%;
+  }
+  .ul-painel-imovel-acoes .ul-badge {
+    align-self: flex-start;
+  }
+  .ul-painel-imovel-acoes .ul-btn,
+  .ul-painel-imovel-acoes form .ul-btn,
+  .ul-painel-imovel-acoes form button {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* --- Imóveis: stats em linha cheia --- */
+  .ul-painel-imovel-stats {
+    margin-left: 0;
+    margin-top: 10px;
+    width: 100%;
+  }
+
+  /* --- Mensagens: ações com wrap compacto --- */
+  .ul-painel-mensagem-acoes {
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-left: 0;
+    width: 100%;
+  }
+  .ul-painel-mensagem-acoes .ul-painel-btn {
+    font-size: 12px;
+    padding: 6px 10px;
+    white-space: nowrap;
+  }
+
+  /* --- Head: botão Novo Imóvel full-width --- */
+  .ul-painel-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .ul-painel-head .ul-btn {
+    justify-content: center;
+    width: 100%;
+  }
+
+  /* --- Aviso posts: layout compacto --- */
+  .ul-painel-aviso {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+    padding: 16px;
+  }
+  .ul-painel-aviso-texto {
+    min-width: 0;
+  }
+
+  /* --- Stats grid: 2 colunas garantidas --- */
+  .ul-painel-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .ul-painel-stat {
+    padding: 14px 10px;
+  }
+  .ul-painel-stat-numero {
+    font-size: 22px;
+  }
+
+  /* --- Modal motivo: textarea full-width --- */
+  #motivoModal textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* ============================================================
+   42. AJUSTES DE LAYOUT — mobile (≤767px)
+   ============================================================ */
+@media (max-width: 767px) {
+
+  /* --- Amenidades: colunas mais estreitas --- */
+  .ul-amenidades-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 12px;
+  }
+  .ul-checkbox {
+    font-size: 12.5px;
+  }
+
+  /* --- Canal-row: empilhar --- */
+  .canal-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .canal-row .form-group:first-child,
+  .canal-row .form-group:nth-child(2) {
+    flex: none;
+    width: 100%;
+  }
+
+  /* --- Fotos preview: thumbnails menores --- */
+  .ul-fotos-preview-img img {
+    width: 80px !important;
+    height: 60px !important;
+  }
+
+  /* --- Form submit: botões empilham --- */
+  .ul-painel-form .ul-painel-card:last-child .ul-painel-form-seccao {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ul-painel-form .ul-painel-card:last-child .ul-btn {
+    width: 100%;
+    justify-content: center;
+    margin-left: 0 !important;
+  }
+
+  /* --- Form labels: mais compactos --- */
+  .form-group label {
+    font-size: 12.5px;
+    margin-bottom: 4px;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  /* --- Cards: padding reduzido --- */
+  .ul-painel-card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+  .ul-painel-card-titulo {
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+
+  /* --- Perfil dados grid: 1 coluna --- */
+  .ul-painel-grid-dados {
+    grid-template-columns: 1fr;
+  }
+
+  /* --- Alertas: padding reduzido --- */
+  .ul-painel-aviso {
+    padding: 14px;
+    border-radius: 14px;
+  }
+  .ul-painel-aviso-icone {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  /* --- Paginação: centralizada --- */
+  .ul-painel-tabela-wrap + div,
+  .ul-painel-card > div:last-child {
+    text-align: center;
+  }
+}
+
+/* ============================================================
+   43. BOTTOM NAV BAR — mobile (≤767px)
+   ============================================================ */
+.ul-painel-bottomnav {
+  display: none;
+}
+@media (max-width: 767px) {
+  .ul-painel-bottomnav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+    background: var(--white);
+    border-top: 1px solid var(--ul-gray);
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+    justify-content: space-around;
+    align-items: center;
+    height: 56px;
+    padding: 0 4px;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .ul-painel-bottomnav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    text-decoration: none;
+    color: var(--ul-gray2);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 4px 0;
+    flex: 1;
+    position: relative;
+    transition: color 0.2s;
+  }
+  .ul-painel-bottomnav-item i {
+    font-size: 20px;
+    line-height: 1;
+  }
+  .ul-painel-bottomnav-item span:not(.ul-painel-bottomnav-badge) {
+    line-height: 1;
+  }
+
+  /* Active state */
+  .ul-painel-bottomnav-item.active {
+    color: var(--ul-primary);
+  }
+  .ul-painel-bottomnav-item.active i {
+    color: var(--ul-primary);
+  }
+
+  /* Badge */
+  .ul-painel-bottomnav-badge {
+    position: absolute;
+    top: 0;
+    right: calc(50% - 18px);
+    background: #E74C3C;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    border-radius: 8px;
+    padding: 0 4px;
+  }
+
+  /* Espaço extra no rodapé e no conteúdo */
+  .ul-painel-rodape {
+    padding-bottom: 60px;
+  }
+  .ul-painel-conteudo {
+    padding-bottom: 10px;
   }
 }

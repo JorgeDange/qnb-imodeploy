@@ -33,6 +33,9 @@
                 <a href="{{ route('home') }}"><img src="{{ asset('assets/img/logo.svg') }}" alt="QNB-Imobiliária" class="logo"></a>
             </div>
             <div class="ul-painel-topbar-right">
+                <button class="ul-painel-sidebar-toggle" aria-label="Menu">
+                    <i class="bi bi-list"></i>
+                </button>
                 <span class="ul-badge-estado">{{ ucfirst(Auth::guard('imobiliaria')->user()->estado) }}</span>
                 <a href="{{ route('home') }}" class="ul-painel-ver-site">Ver site público</a>
             </div>
@@ -42,6 +45,9 @@
 
             <!-- SIDEBAR -->
             <aside class="ul-painel-sidebar">
+                <button class="ul-painel-sidebar-fechar" aria-label="Fechar menu">
+                    <i class="bi bi-x-lg"></i>
+                </button>
                 <div class="ul-painel-sidebar-perfil">
                     <div class="ul-painel-avatar">
                         @php $imob = Auth::guard('imobiliaria')->user(); @endphp
@@ -122,11 +128,18 @@
                     </li>
 
                     <li>
-                        <a href="{{ route('painel.logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="bi bi-box-arrow-right"></i> Sair</a>
-                        <form id="logout-form" action="{{ route('painel.logout') }}" method="POST" style="display:none;">@csrf</form>
+                        <form action="{{ route('painel.logout') }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" style="background:none;border:none;cursor:pointer;padding:0;width:100;text-align:left;font:inherit;color:inherit;">
+                                <i class="bi bi-box-arrow-right"></i> Sair
+                            </button>
+                        </form>
                     </li>
                 </ul>
             </aside>
+
+            <!-- OVERLAY (mobile) -->
+            <div class="ul-painel-sidebar-overlay"></div>
 
             <!-- CONTEÚDO -->
             <div class="ul-painel-conteudo">
@@ -145,6 +158,32 @@
             <span><a href="{{ route('home') }}">Voltar ao site</a></span>
         </footer>
     </div>
+
+    <!-- BOTTOM NAV (mobile ≤767px) -->
+    <nav class="ul-painel-bottomnav">
+        <a href="{{ route('painel.dashboard') }}" class="ul-painel-bottomnav-item {{ request()->routeIs('painel.dashboard') ? 'active' : '' }}">
+            <i class="bi bi-house-door"></i>
+            <span>Início</span>
+        </a>
+        <a href="{{ route('painel.imoveis') }}" class="ul-painel-bottomnav-item {{ request()->routeIs('painel.imoveis*') ? 'active' : '' }}">
+            <i class="bi bi-building"></i>
+            <span>Imóveis</span>
+        </a>
+        <a href="{{ route('painel.mensagens') }}" class="ul-painel-bottomnav-item {{ request()->routeIs('painel.mensagens*') ? 'active' : '' }}">
+            <i class="bi bi-envelope"></i>
+            <span>Msgs</span>
+            @if($msgsNaoLidas > 0)<span class="ul-painel-bottomnav-badge">{{ $msgsNaoLidas }}</span>@endif
+        </a>
+        <a href="{{ route('painel.visitas') }}" class="ul-painel-bottomnav-item {{ request()->routeIs('painel.visitas*') ? 'active' : '' }}">
+            <i class="bi bi-calendar-check"></i>
+            <span>Visitas</span>
+            @if($visitasPend > 0)<span class="ul-painel-bottomnav-badge">{{ $visitasPend }}</span>@endif
+        </a>
+        <a href="{{ route('painel.perfil') }}" class="ul-painel-bottomnav-item {{ request()->routeIs('painel.perfil*') ? 'active' : '' }}">
+            <i class="bi bi-person-circle"></i>
+            <span>Perfil</span>
+        </a>
+    </nav>
 
     <!-- scripts -->
     <script src="{{ asset('assets/vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
