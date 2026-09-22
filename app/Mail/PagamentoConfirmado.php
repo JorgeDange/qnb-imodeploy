@@ -48,7 +48,7 @@ class PagamentoConfirmado extends Mailable
         }
 
         return [
-            Attachment::from($caminhoCompleto)
+            Attachment::fromPath($caminhoCompleto)
                 ->as('Fatura-' . str_replace('/', '-', $fatura->numero) . '.pdf')
                 ->withMime('application/pdf'),
         ];
