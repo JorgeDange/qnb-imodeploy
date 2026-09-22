@@ -66,7 +66,7 @@ class PagamentoService
 
         // 5. Enviar fatura à imobiliária
         if ($imobiliaria->email) {
-            \Illuminate\Support\Facades\Mail::to($imobiliaria->email)->queue(
+            \Illuminate\Support\Facades\Mail::to($imobiliaria->email)->send(
                 new \App\Mail\FaturaEmitidaMail($fatura)
             );
         }
@@ -177,7 +177,7 @@ class PagamentoService
 
         // 4. Enviar fatura à imobiliária por email
         if ($imobiliaria->email) {
-            \Illuminate\Support\Facades\Mail::to($imobiliaria->email)->queue(
+            \Illuminate\Support\Facades\Mail::to($imobiliaria->email)->send(
                 new \App\Mail\FaturaEmitidaMail($fatura)
             );
         }

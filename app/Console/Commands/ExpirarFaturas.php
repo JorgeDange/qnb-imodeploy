@@ -38,7 +38,7 @@ class ExpirarFaturas extends Command
             // Enviar email
             $imobiliaria = $fatura->imobiliaria;
             if ($imobiliaria && $imobiliaria->email) {
-                Mail::to($imobiliaria->email)->queue(
+                Mail::to($imobiliaria->email)->send(
                     new \App\Mail\FaturaCanceladaMail($fatura)
                 );
 

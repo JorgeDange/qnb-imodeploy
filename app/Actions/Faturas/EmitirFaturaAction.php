@@ -28,7 +28,7 @@ class EmitirFaturaAction
 
         $imobiliaria = $fatura->imobiliaria;
         if ($imobiliaria && $imobiliaria->email) {
-            Mail::to($imobiliaria->email)->queue(
+            Mail::to($imobiliaria->email)->send(
                 new \App\Mail\FaturaEmitidaMail($fatura)
             );
             $this->faturaService->registrarEmail($fatura, 'fatura_emitida', $imobiliaria->email);

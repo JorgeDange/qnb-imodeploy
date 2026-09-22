@@ -30,7 +30,7 @@ class SubmeterComprovativoAction
         // Enviar email ao admin
         $adminEmail = config('mail.from.address');
         if ($adminEmail) {
-            Mail::to($adminEmail)->queue(
+            Mail::to($adminEmail)->send(
                 new \App\Mail\ComprovativoSubmetidoMail($fatura)
             );
             $this->faturaService->registrarEmail($fatura, 'comprovativo_submetido', $adminEmail);

@@ -35,7 +35,7 @@ class AprovarPagamentoAction
         // Enviar email à imobiliária
         $imobiliaria = $fatura->imobiliaria;
         if ($imobiliaria && $imobiliaria->email) {
-            Mail::to($imobiliaria->email)->queue(
+            Mail::to($imobiliaria->email)->send(
                 new \App\Mail\PagamentoConfirmadoMail($fatura)
             );
             $this->faturaService->registrarEmail($fatura, 'pagamento_confirmado', $imobiliaria->email);

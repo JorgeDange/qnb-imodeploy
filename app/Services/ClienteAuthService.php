@@ -26,7 +26,7 @@ class ClienteAuthService
                 'estado'            => 'ativo',
             ]);
 
-            Mail::to($cliente->email)->queue(new BemVindoClienteMail($cliente));
+            Mail::to($cliente->email)->send(new BemVindoClienteMail($cliente));
             $this->enviarVerificacaoEmail($cliente);
 
             return $cliente;
@@ -80,7 +80,7 @@ class ClienteAuthService
         }
 
         $token = $cliente->gerarToken('verificacao_email', 60 * 24);
-        Mail::to($cliente->email)->queue(new VerificarEmailClienteMail($cliente, $token));
+        Mail::to($cliente->email)->send(new VerificarEmailClienteMail($cliente, $token));
     }
 
     public function verificarEmail(string $token): Cliente
@@ -108,7 +108,7 @@ class ClienteAuthService
     {
         $cliente = Cliente::where('email', $email)->firstOrFail();
         $token = $cliente->gerarToken('recuperacao_password', 60);
-        Mail::to($cliente->email)->queue(new RecuperarPasswordClienteMail($cliente, $token));
+        Mail::to($cliente->email)->send(new RecuperarPasswordClienteMail($cliente, $token));
     }
 
     public function redefinirPassword(string $email, string $token, string $novaPassword): Cliente
