@@ -87,13 +87,14 @@
                     @endforeach
                     @else
                     <!-- fallback -->
-                    <div class="swiper-slide"><img src="{{ asset('assets/img/partner-1.png') }}" alt="Parter Logo"></div>
-                    <div class="swiper-slide"><img src="{{ asset('assets/img/partner-2.png') }}" alt="Parter Logo"></div>
-                    <div class="swiper-slide"><img src="{{ asset('assets/img/partner-3.png') }}" alt="Parter Logo"></div>
-                    <div class="swiper-slide"><img src="{{ asset('assets/img/partner-4.png') }}" alt="Parter Logo"></div>
-                    <div class="swiper-slide"><img src="{{ asset('assets/img/partner-5.png') }}" alt="Parter Logo"></div>
-                    <div class="swiper-slide"><img src="{{ asset('assets/img/partner-6.png') }}" alt="Parter Logo"></div>
-                    <div class="swiper-slide"><img src="{{ asset('assets/img/partner-1.png') }}" alt="Parter Logo"></div>
+                    <div class="swiper-slide"><img src="{{ asset('assets/img/logo-c.svg') }}" alt="Parter Logo"></div>
+                    <div class="swiper-slide"><img src="{{ asset('assets/img/logo-c.svg') }}" alt="Parter Logo"></div>
+                    <div class="swiper-slide"><img src="{{ asset('assets/img/logo-c.svg') }}" alt="Parter Logo"></div>
+                    <div class="swiper-slide"><img src="{{ asset('assets/img/logo-c.svg') }}" alt="Parter Logo"></div>
+                    <div class="swiper-slide"><img src="{{ asset('assets/img/logo-c.svg') }}" alt="Parter Logo"></div>
+                    <div class="swiper-slide"><img src="{{ asset('assets/img/logo-c.svg') }}" alt="Parter Logo"></div>
+                    <div class="swiper-slide"><img src="{{ asset('assets/img/logo-c.svg') }}" alt="Parter Logo"></div>
+                    <div class="swiper-slide"><img src="{{ asset('assets/img/logo-c.svg') }}" alt="Parter Logo"></div>
                     @endif
                 </div>
             </div>
