@@ -128,9 +128,9 @@
                     </li>
 
                     <li>
-                        <form action="{{ route('painel.logout') }}" method="POST" style="display:inline;">
+                        <form action="{{ route('painel.logout') }}" method="POST" class="ul-painel-nav-form">
                             @csrf
-                            <button type="submit" style="background:none;border:none;cursor:pointer;padding:0;width:100;text-align:left;font:inherit;color:inherit;">
+                            <button type="submit" class="ul-painel-nav-btn">
                                 <i class="bi bi-box-arrow-right"></i> Sair
                             </button>
                         </form>

@@ -176,6 +176,37 @@ body {
   pointer-events: none;
   cursor: not-allowed;
 }
+.ul-painel-nav-form {
+  display: block;
+  width: 100%;
+}
+.ul-painel-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ul-gray2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  transition: 0.3s ease;
+}
+.ul-painel-nav-btn i {
+  font-size: 16px;
+  color: var(--ul-secondary);
+  transition: 0.3s ease;
+}
+.ul-painel-nav-btn:hover {
+  background-color: var(--white);
+  color: var(--ul-secondary);
+  box-shadow: 8px 10px 20px 1px rgba(0, 0, 0, 0.06);
+}
 
 /* ---- 4. Conteúdo ---- */
 .ul-painel-conteudo {
@@ -1664,6 +1695,14 @@ body {
     gap: 10px;
   }
   .ul-painel-nav li a i {
+    font-size: 15px;
+  }
+  .ul-painel-nav-btn {
+    padding: 10px 14px;
+    font-size: 13.5px;
+    gap: 10px;
+  }
+  .ul-painel-nav-btn i {
     font-size: 15px;
   }
 
